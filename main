@@ -263,7 +263,7 @@ async def on_message(message):
                     pass
                 else:
                     await message.channel.send("Failed to stop GM script.")
-    if message.content.lower() == "reroll gm message": # do not make into elif statements because it won't go to the next one if false
+    if message.content.lower() == "reroll gm message":
         await message.delete()
         async with aiohttp.ClientSession() as session:
             async with session.get('http://192.168.1.134:5000/reroll_gm_message') as resp:
@@ -292,8 +292,6 @@ async def on_message(message):
                                                 binary=1,
                                                 bot_type2=1)
                     await embeded.edit(embed=embede)
-    if message.content.lower().split("&")[0] == "set gm":
-        await message.delete()
 
 
 gm_running = False
