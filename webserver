@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask
 from datetime import datetime
 import pyautogui
 import time
@@ -101,6 +101,10 @@ def reroll_gm_message():
 @app.route('/reroll_gm_time', methods=['GET'])
 def reroll_gm_time():
     return "switched", 200
+
+@app.route('/set_gm_message', methods=['GET'])
+def set_gm_message():
+    return "set",200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
