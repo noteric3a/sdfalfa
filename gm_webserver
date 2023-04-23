@@ -47,13 +47,13 @@ gm_stopper = True
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 
-
+run_handle_requests = True
 def handle_requests():
     global gm_target_time
     global gm_message
     global gm_stopper
-    global stop_num
-    while True:
+    global run_handle_requests
+    while run_handle_requests:
         response_time = requests.get('http://localhost:8080/get_gm_time')
         gm_target_time = response_time.json().get('variable_name')
         response_message = requests.get('http://localhost:8080/get_gm_message')
@@ -62,6 +62,7 @@ def handle_requests():
         stop_num = response_stop.json().get('variable_name')
         if stop_num == 1:
             gm_stopper = False
+            run_handle_requests = False
             break
         time.sleep(10)
 
@@ -71,28 +72,37 @@ def run_script():
     global gm_stopper
     global gm_target_time
     global gm_message
-    global stop_num
+    global run_handle_requests
+
+    # Reset stopper and handle_requests flag to True
     gm_stopper = True
+    run_handle_requests = True
+
     response = requests.get('http://localhost:8080/get_gm_time')
     gm_target_time = response.json().get('variable_name')
+
     response = requests.get('http://localhost:8080/get_gm_message')
     gm_message = response.json().get('variable_name')
+
     thread = threading.Thread(target=handle_requests)
     thread.start()
-    while gm_stopper:
 
+    while gm_stopper:
         current_time = datetime.now().strftime("%H:%M:%S")
-        print(current_time)
         try:
             if current_time == gm_target_time:
                 # does the task
                 WeChatTask(gm_message)
                 # sends a success message to turn the embed green
                 gm_stopper = False
-                return "Script started successfully.", 200
+                break
             time.sleep(1)
         except Exception as e:
             return f"Error: {e}", 500
+
+    # Set handle_requests flag to False
+    run_handle_requests = False
+
     return "Script stopped.", 201
 
 
