@@ -1,6 +1,6 @@
 # wechatbot
 
-set gm&(message)
+set gm&(message) \n
 set gn&(message)
 reroll gm message
 reroll gn message
