@@ -1,8 +1,14 @@
 # wechatbot
-
+does stuff on wechat
 # set gm&(message)
-set gn&(message)
-reroll gm message
-reroll gn message
-reroll gm time
-reroll gn time
+sets gm message
+# set gn&(message)
+sets gn message
+# reroll gm message
+rerolls gm message
+# reroll gn message
+rerolls gn message
+# reroll gm time
+rerolls gm time
+# reroll gn time
+rerolls gn time
