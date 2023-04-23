@@ -8,6 +8,8 @@ import asyncio
 import threading
 
 keyboard = Controller()
+
+
 def WeChatTask(message):
     print(pyautogui.size())
     pyautogui.moveTo(420, 1060, duration=0)
@@ -15,14 +17,14 @@ def WeChatTask(message):
 
     time.sleep(1)
 
-    # goes to wechat and clicks it
+    # goes to WeChat and clicks it
 
     pyautogui.moveTo(600, 280, duration=0.5)  # serena is 600, 280. test is 600, 350
     pyautogui.click(600, 280)
 
     time.sleep(1)
 
-    # goes to serenas profile
+    # goes to serena's profile
 
     pyautogui.typewrite(message)
 
@@ -38,73 +40,83 @@ def WeChatTask(message):
 
     # clicks off
 
+
 app = Flask(__name__)
 
-stopper = True
+gm_stopper = True
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 
+
 def handle_requests():
-    global target_time
-    global gmmessage
-    global stopper
+    global gm_target_time
+    global gm_message
+    global gm_stopper
     global stop_num
     while True:
-        response_time = requests.get('http://localhost:8080/get_time')
-        target_time = response_time.json().get('variable_name')
-        response_message = requests.get('http://localhost:8080/get_message')
-        gmmessage = response_message.json().get('variable_name')
-        response_stop = requests.get('http://localhost:8080/stop')
+        response_time = requests.get('http://localhost:8080/get_gm_time')
+        gm_target_time = response_time.json().get('variable_name')
+        response_message = requests.get('http://localhost:8080/get_gm_message')
+        gm_message = response_message.json().get('variable_name')
+        response_stop = requests.get('http://localhost:8080/stop_gm')
         stop_num = response_stop.json().get('variable_name')
         if stop_num == 1:
-            stopper = False
+            gm_stopper = False
             break
         time.sleep(10)
 
-@app.route('/gm', methods=['POST','GET'])
+
+@app.route('/gm', methods=['POST', 'GET'])
 def run_script():
-    global stopper
-    global target_time
-    global gmmessage
+    global gm_stopper
+    global gm_target_time
+    global gm_message
     global stop_num
-    stopper = True
-    response = requests.get('http://localhost:8080/get_time')
-    target_time = response.json().get('variable_name')
-    response = requests.get('http://localhost:8080/get_message')
-    gmmessage = response.json().get('variable_name')
+    gm_stopper = True
+    response = requests.get('http://localhost:8080/get_gm_time')
+    gm_target_time = response.json().get('variable_name')
+    response = requests.get('http://localhost:8080/get_gm_message')
+    gm_message = response.json().get('variable_name')
     thread = threading.Thread(target=handle_requests)
     thread.start()
-    while stopper:
+    while gm_stopper:
+
         current_time = datetime.now().strftime("%H:%M:%S")
+        print(current_time)
         try:
-            if current_time == target_time:
+            if current_time == gm_target_time:
                 # does the task
-                WeChatTask(gmmessage)
+                WeChatTask(gm_message)
                 # sends a success message to turn the embed green
-                stopper = False
+                gm_stopper = False
                 return "Script started successfully.", 200
             time.sleep(1)
         except Exception as e:
             return f"Error: {e}", 500
     return "Script stopped.", 201
 
+
 @app.route('/stop_gm', methods=['GET'])
 def stop_gm():
-    global stopper
-    stopper = False
-    return "",200
+    global gm_stopper
+    gm_stopper = False
+    return "", 200
+
 
 @app.route('/reroll_gm_message', methods=['GET'])
 def reroll_gm_message():
     return "switched", 200
 
+
 @app.route('/reroll_gm_time', methods=['GET'])
 def reroll_gm_time():
     return "switched", 200
 
+
 @app.route('/set_gm_message', methods=['GET'])
 def set_gm_message():
-    return "set",200
+    return "set", 200
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
