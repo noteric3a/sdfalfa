@@ -571,12 +571,18 @@ def get_gm_message():
 
 @app.route('/stop_gm', methods=['GET'])
 def stop_gm():
-    return jsonify(variable_name=gm_stop_num)
+    global gm_stop_num
+    response = jsonify(variable_name=gm_stop_num)
+    gm_stop_num = 0
+    return response
 
 
 @app.route('/stop_gn', methods=['GET'])
 def stop_gn():
-    return jsonify(variable_name=gn_stop_num)
+    global gn_stop_num
+    response = jsonify(variable_name=gn_stop_num)
+    gn_stop_num = 0
+    return response
 
 
 @app.route('/get_gn_time', methods=['GET'])
