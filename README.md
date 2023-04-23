@@ -12,3 +12,15 @@ rerolls gn message
 rerolls gm time
 # reroll gn time
 rerolls gn time
+
+# imports
+import discord
+import flask
+import requests
+import pyautogui
+import keyboard
+import asyncio
+import threading
+import datetime
+import time
+import random
