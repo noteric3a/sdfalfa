@@ -1,8 +1,9 @@
 import asyncio
+import io
 from datetime import datetime
 from random import randint
 import aiohttp
-import discord
+from discord import *
 from discord.ext import commands
 from flask import jsonify, Flask
 
@@ -533,7 +534,6 @@ async def gn(interaction: discord.Interaction, hour: int = None, minute: int = N
 
     try:
         async with aiohttp.ClientSession() as session2:
-            print("hi")
             async with session2.get('http://192.168.1.134:5001/gn') as resp:
                 if resp.status == 200:
 
@@ -554,6 +554,22 @@ async def gn(interaction: discord.Interaction, hour: int = None, minute: int = N
     # Update the embed with the final message and set the flag to indicate that the command has finished running
     await embeded2.edit(embed=embede)
     gn_running = False
+
+
+@bot.tree.comand(name="screenshot", description="takes a screenshot of wechat")
+async def screenshot(interaction: discord.Interaction):
+    channel = interaction.channel
+    try:
+        async with aiohttp.ClientSession() as session3:
+            async with session3.get('http://192.168.1.104:42069/screenshot') as resp:
+                if resp.status == 200:
+                    file = File(io.BytesIO(await resp.read()), 'screenshot.py')
+                    await channel.send(file=file)
+                else:
+                    await channel.send('failed')
+
+    except Exception as e:
+        pass
 
 
 # get requests from webserver to get the variables
