@@ -12,15 +12,15 @@ keyboard = Controller()
 
 def WeChatTask(message):
     print(pyautogui.size())
-    pyautogui.moveTo(420, 1060, duration=0)
-    pyautogui.click(420, 1060)
+    pyautogui.moveTo(500, 1060, duration=0)
+    pyautogui.click(500, 1060)
 
     time.sleep(1)
 
     # goes to WeChat and clicks it
 
-    pyautogui.moveTo(600, 280, duration=0.5)  # serena is 600, 280. test is 600, 350
-    pyautogui.click(600, 280)
+    pyautogui.moveTo(700, 280, duration=0.5)  # serena is 600, 280. test is 600, 350
+    pyautogui.click(700, 280)
 
     time.sleep(1)
 

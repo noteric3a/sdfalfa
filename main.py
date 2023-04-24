@@ -559,15 +559,16 @@ async def gn(interaction: discord.Interaction, hour: int = None, minute: int = N
 
 @bot.tree.command(name="screenshot", description="takes a screenshot of wechat")
 async def screenshot(interaction: discord.Interaction):
-    channel = interaction.channel
+    await interaction.response.send_message(content="WeChat Screenshot.")
     try:
-        async with aiohttp.ClientSession() as session3:
-            async with session3.get('http://192.168.1.104:42069/screenshot') as resp:
+        async with aiohttp.ClientSession() as session:
+            async with session.get('http://192.168.1.104:42069/screenshot') as resp:
                 if resp.status == 200:
-                    file = File(io.BytesIO(await resp.read()), 'screenshot.py')
-                    await channel.send(file=file)
+                    file_data = io.BytesIO(await resp.read())
+                    file = File(file_data, filename='screenshot.png')
+                    await interaction.channel.send(file=file)
                 else:
-                    await channel.send('failed')
+                    await interaction.channel.send('failed')
 
     except Exception as e:
         pass
