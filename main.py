@@ -3,7 +3,8 @@ import io
 from datetime import datetime
 from random import randint
 import aiohttp
-from discord import *
+import discord
+from discord import File
 from discord.ext import commands
 from flask import jsonify, Flask
 
@@ -180,12 +181,12 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
     )
 
     if bot_type2 == 1:
-        with open("C:\\Users\\hee hee hee ha\\PycharmProjects\\Wechat web server\\day.txt", "r") as file:
+        with open("C:\\Users\\a\\Downloads\\hehehea\\wechatbot-main\\day.txt", "r") as file:
             lines = file.readlines()
             if lines:  # checks if its empty
                 gg = lines[-1]
     elif bot_type2 == 2:
-        with open("C:\\Users\\hee hee hee ha\\PycharmProjects\\Wechat web server\\day2.txt", "r") as file:
+        with open("C:\\Users\\a\\Downloads\\hehehea\\wechatbot-main\\day2.txt", "r") as file:
             lines = file.readlines()
             if lines:  # checks if its empty
                 gg = lines[-1]
@@ -215,7 +216,7 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
 
 def day(bot_type):
     if bot_type == 1:
-        with open("C:\\Users\\hee hee hee ha\\PycharmProjects\\Wechat web server\\day.txt", "r") as file:
+        with open("C:\\Users\\a\\Downloads\\hehehea\\wechatbot-main\\day.txt", "r") as file:
             lines = file.readlines()
         if lines:  # checks if its empty
             days = lines[-1]
@@ -224,7 +225,7 @@ def day(bot_type):
         else:
             print("File is empty.")
     elif bot_type == 2:
-        with open("C:\\Users\\hee hee hee ha\\PycharmProjects\\Wechat web server\\day2.txt", "r") as file:
+        with open("C:\\Users\\a\\Downloads\\hehehea\\wechatbot-main\\day2.txt", "r") as file:
             lines = file.readlines()
         if lines:  # checks if its empty
             days = lines[-1]
@@ -246,12 +247,12 @@ def makeCurrentDay(bot_type, days):
     if bot_type == 1:
         MessageKit = str(
             currentday) + " - " + gm_message + " | " + "Date and Time: " + todayasstring + " " + gn_target_time
-        with open("C:\\Users\\hee hee hee ha\\PycharmProjects\\Wechat web server\\day.txt", "a") as file:
+        with open("C:\\Users\\a\\Downloads\\hehehea\\wechatbot-main\\day.txt", "a") as file:
             file.write("\n" + MessageKit)
     elif bot_type == 2:
         MessageKit = str(
             currentday) + " - " + gn_message + " | " + "Date and Time: " + todayasstring + " " + target_time2
-        with open("C:\\Users\\hee hee hee ha\\PycharmProjects\\Wechat web server\\day2.txt", "a") as file:
+        with open("C:\\Users\\a\\Downloads\\hehehea\\wechatbot-main\\day2.txt", "a") as file:
             file.write("\n" + MessageKit)
 
 
@@ -287,7 +288,7 @@ async def on_message(message):
     if message.content.lower() == "stop gm":
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://192.168.1.134:5000/stop_gm') as resp:
+            async with session.get('http://192.168.1.104:5000/stop_gm') as resp:
                 if resp.status == 200:
                     gm_stop_num = 1
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
@@ -300,7 +301,7 @@ async def on_message(message):
     if message.content.lower() == "reroll gm message":  # do not make into elif statements because it won't go to the next one if false
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://192.168.1.134:5000/reroll_gm_message') as resp:
+            async with session.get('http://192.168.1.104:5000/reroll_gm_message') as resp:
                 if resp.status == 200:
                     gm_message = GoodMorningMessage()
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
@@ -317,7 +318,7 @@ async def on_message(message):
     if message.content.lower() == "reroll gm time":
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://192.168.1.134:5000/reroll_gm_time') as resp:
+            async with session.get('http://192.168.1.104:5000/reroll_gm_time') as resp:
                 if resp.status == 200:
                     new_target_time = await target_time_getter(gm_hour, gm_minute, gm_second, bot_type=1)
                     gm_target_time = new_target_time
@@ -335,7 +336,7 @@ async def on_message(message):
     if message.content.lower().split("&")[0] == "set gm":
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://192.168.1.134:5000/set_gm_message') as resp:
+            async with session.get('http://192.168.1.104:5000/set_gm_message') as resp:
                 if resp.status == 200:
                     gm_message = message.content.lower().split("&")[1]
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
@@ -352,7 +353,7 @@ async def on_message(message):
     if message.content.lower() == "stop gn":
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://192.168.1.134:5001/stop_gn') as resp:
+            async with session.get('http://192.168.1.104:5001/stop_gn') as resp:
                 if resp.status == 200:
                     gn_stop_num = 1
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
@@ -365,7 +366,7 @@ async def on_message(message):
     if message.content.lower() == "reroll gn message":  # do not make into elif statements because it won't go to the next one if false
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://192.168.1.134:5001/reroll_gn_message') as resp:
+            async with session.get('http://192.168.1.104:5001/reroll_gn_message') as resp:
                 if resp.status == 200:
                     gn_message = GoodNightMessage()
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
@@ -382,7 +383,7 @@ async def on_message(message):
     if message.content.lower() == "reroll gn time":
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://192.168.1.134:5001/reroll_gn_time') as resp:
+            async with session.get('http://192.168.1.104:5001/reroll_gn_time') as resp:
                 if resp.status == 200:
                     new_target_time = await target_time_getter(gn_hour, gn_minute, gn_second, bot_type=2)
                     gn_target_time = new_target_time
@@ -400,7 +401,7 @@ async def on_message(message):
     if message.content.lower().split("&")[0] == "set gn":
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://192.168.1.134:5001/set_gn_message') as resp:
+            async with session.get('http://192.168.1.104:5001/set_gn_message') as resp:
                 if resp.status == 200:
                     gm_message = message.content.lower().split("&")[1]
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
@@ -464,7 +465,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://192.168.1.134:5000/gm') as resp:
+            async with session.get('http://192.168.1.104:5000/gm') as resp:
                 if resp.status == 200:
 
                     # Update the embed with a success message
@@ -534,7 +535,7 @@ async def gn(interaction: discord.Interaction, hour: int = None, minute: int = N
 
     try:
         async with aiohttp.ClientSession() as session2:
-            async with session2.get('http://192.168.1.134:5001/gn') as resp:
+            async with session2.get('http://192.168.1.104:5001/gn') as resp:
                 if resp.status == 200:
 
                     # Update the embed with a success message
@@ -556,7 +557,7 @@ async def gn(interaction: discord.Interaction, hour: int = None, minute: int = N
     gn_running = False
 
 
-@bot.tree.comand(name="screenshot", description="takes a screenshot of wechat")
+@bot.tree.command(name="screenshot", description="takes a screenshot of wechat")
 async def screenshot(interaction: discord.Interaction):
     channel = interaction.channel
     try:
