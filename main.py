@@ -181,12 +181,12 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
     )
 
     if bot_type2 == 1:
-        with open("C:\\Users\\a\\Downloads\\hehehea\\wechatbot-main\\day.txt", "r") as file:
+        with open("day.txt", "r") as file:
             lines = file.readlines()
             if lines:  # checks if its empty
                 gg = lines[-1]
     elif bot_type2 == 2:
-        with open("C:\\Users\\a\\Downloads\\hehehea\\wechatbot-main\\day2.txt", "r") as file:
+        with open("day2.txt", "r") as file:
             lines = file.readlines()
             if lines:  # checks if its empty
                 gg = lines[-1]
@@ -216,7 +216,7 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
 
 def day(bot_type):
     if bot_type == 1:
-        with open("C:\\Users\\a\\Downloads\\hehehea\\wechatbot-main\\day.txt", "r") as file:
+        with open("day.txt", "r") as file:
             lines = file.readlines()
         if lines:  # checks if its empty
             days = lines[-1]
@@ -225,7 +225,7 @@ def day(bot_type):
         else:
             print("File is empty.")
     elif bot_type == 2:
-        with open("C:\\Users\\a\\Downloads\\hehehea\\wechatbot-main\\day2.txt", "r") as file:
+        with open("day2.txt", "r") as file:
             lines = file.readlines()
         if lines:  # checks if its empty
             days = lines[-1]
@@ -247,12 +247,12 @@ def makeCurrentDay(bot_type, days):
     if bot_type == 1:
         MessageKit = str(
             currentday) + " - " + gm_message + " | " + "Date and Time: " + todayasstring + " " + gn_target_time
-        with open("C:\\Users\\a\\Downloads\\hehehea\\wechatbot-main\\day.txt", "a") as file:
+        with open("day.txt", "a") as file:
             file.write("\n" + MessageKit)
     elif bot_type == 2:
         MessageKit = str(
             currentday) + " - " + gn_message + " | " + "Date and Time: " + todayasstring + " " + target_time2
-        with open("C:\\Users\\a\\Downloads\\hehehea\\wechatbot-main\\day2.txt", "a") as file:
+        with open("day2.txt", "a") as file:
             file.write("\n" + MessageKit)
 
 
