@@ -160,7 +160,7 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
                          int(targetTime.split(":")[0]), int(targetTime.split(":")[1]),
                          int(targetTime.split(":")[2])).timestamp()
     timestamp = str(timestamp).split(".")[0]
-
+    global colors
     if binary == 1:
         colors = discord.Color.blue()  # working
     elif binary == 2:
@@ -207,7 +207,7 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
 
         # Set the author, footer, and thumbnail of the embed
         embede.set_author(name="WeChat Bot")
-        embede.set_footer(text="updated 4/17/2023")
+        embede.set_footer(text="updated 4/24/2023")
 
     return embede
 
