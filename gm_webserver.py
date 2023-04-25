@@ -103,7 +103,7 @@ def run_script():
     # Set handle_requests flag to False
     run_handle_requests = False
 
-    return "Script stopped.", 201
+    return "Script stopped.", 200
 
 
 @app.route('/stop_gm', methods=['GET'])
