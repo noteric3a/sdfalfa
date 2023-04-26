@@ -9,6 +9,8 @@ from discord.ext import commands
 from flask import jsonify, Flask
 import requests
 
+# 4/26/2023
+
 app = Flask(__name__)
 
 gn_target_time = ""
