@@ -23,6 +23,7 @@ gm_second = None
 message_stopper = True
 gm_stop_num = 0
 gn_stop_num = 0
+warning_time_checker = True
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 def GoodMorningMessage():
@@ -290,6 +291,7 @@ async def on_message(message):
     global gn_stop_num
     global message_stopper
     global embeded3
+    global warning_time_checker
 
     if message.content.lower() == "stop gm":
         await message.delete()
@@ -422,6 +424,7 @@ async def on_message(message):
                 else:
                     await message.channel.send("Couldnt set GN message.")
     if message.content.lower() == "stop message":
+        warning_time_checker = False
         await message.delete()
         message_stopper = False
         embede = await create_embed(bot_type="Send Message", targetTime=send_message_time, message=sending_message,
@@ -614,6 +617,7 @@ async def list_all_days(interaction: discord.Interaction, bot_type: int):
         await dchannel.send(embed=message_embed)
 
 async def check_warning_time(message, send_message_time, set_message, warning_send_message_time):
+    global warning_time_checker
     warning_time_checker = True
     while warning_time_checker:
         current_time = datetime.now().strftime("%H:%M:%S")
@@ -633,6 +637,7 @@ async def send_message3(interaction: discord.Interaction, set_message: str, set_
     global sending_message
     global warning_send_message_time
     global embeded3
+    global message_checker
     channel = interaction.channel
     await interaction.response.send_message(content="Send message has started!")
 
@@ -678,6 +683,8 @@ async def send_message3(interaction: discord.Interaction, set_message: str, set_
                                             binary=1, bot_type2=3)
     embeded3 = await channel.send(embed=send_message_embed)
 
+    message_checker = True
+
     try:
         asyncio.create_task(check_warning_time(embeded3, send_message_time, set_message, warning_send_message_time))
         async with aiohttp.ClientSession() as session:
@@ -687,6 +694,7 @@ async def send_message3(interaction: discord.Interaction, set_message: str, set_
                                                             message=set_message,
                                                             binary=3, bot_type2=3)
                     await embeded3.edit(embed=send_message_embed)
+                    message_checker = False
                 else:
                     send_message_embed = await create_embed(bot_type="Send Message", targetTime=send_message_time,
                                                             message=set_message,
