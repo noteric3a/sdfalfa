@@ -12,6 +12,8 @@ rerolls gn message
 rerolls gm time
 # reroll gn time
 rerolls gn time
+# stop gm/gn/message
+stops the bot
 
 # imports
 import discord
