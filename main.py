@@ -374,7 +374,7 @@ async def on_message(message):
                                                 bot_type2=2)
                     await embeded2.edit(embed=embede)
                     await asyncio.sleep(0.3)
-                    embede = await create_embed(bot_type="GM bot", targetTime=gn_target_time, message=gn_message,
+                    embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                                 binary=1,
                                                 bot_type2=2)
                     await embeded2.edit(embed=embede)
