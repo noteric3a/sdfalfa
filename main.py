@@ -572,6 +572,35 @@ async def screenshot(interaction: discord.Interaction):
 
     except Exception as e:
         pass
+    
+@bot.tree.command(name="list_all_days", description="history of the messages")
+async def list_all_days(interaction: discord.Interaction, bot_type: int):
+    await interaction.response.send_message(content="Messages:")
+    dchannel = interaction.channel
+    if bot_type == 1:
+        message_string = ""
+        with open("day.txt", "r") as f:
+            lines = f.readlines()
+        for i, messages in enumerate(lines, start=1):
+            message_string += f"{messages.strip()}\n"
+        message_embed = discord.Embed(
+            title="History of all messages sent",
+            description=message_string,
+            color=discord.Color.blurple()
+        )
+        await dchannel.send(embed=message_embed)
+    elif bot_type == 2:
+        message_string = ""
+        with open("day2.txt", "r") as f:
+            lines = f.readlines()
+        for i, messages in enumerate(lines, start=1):
+            message_string += f"{messages.strip()}\n"
+        message_embed = discord.Embed(
+            title="History of all messages sent",
+            description=message_string,
+            color=discord.Color.blurple()
+        )
+        await dchannel.send(embed=message_embed)
 
 
 # get requests from webserver to get the variables
