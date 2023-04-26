@@ -14,33 +14,19 @@ loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 keyboard = Controller()
 
-def handle_requests():
-    global handler
-    global set_message_time
-    global set_message
-    global handler
-    while handler:
-        response = requests.get('http://localhost:8080/get_send_message_time')
-        set_message_time = response.json().get('variable_name')
-        response = requests.get('http://localhost:8080/get_send_message')
-        set_message = response.json().get('variable_name')
-        response = requests.get('http://localhost:8080/stop_send_message')
-        handler = response.json().get('variable_name')
-        time.sleep(10)
-
 @app.route('/screenshot', methods=['GET'])
-async def screenshot():
+def screenshot():
     pyautogui.moveTo(500, 1060, duration=0)
     pyautogui.click(500, 1060)
 
-    await asyncio.sleep(1)
+    time.sleep(1)
 
     # goes to WeChat and clicks it
 
     pyautogui.moveTo(700, 280, duration=0.5)  # serena is 670, 280. test is 600, 350
     pyautogui.click(700, 280)
 
-    await asyncio.sleep(1)
+    time.sleep(1)
 
     # get the app window and height
 
@@ -59,17 +45,30 @@ async def screenshot():
 
     return send_file(filename, mimetype='image/png'), 200
 
-@app.route('/send',methods = ['GET'])
-async def send_message():
+def handle_requests():
     global handler
+    stop_checker = True
+    while stop_checker:
+        response = requests.get('http://localhost:8080/stop_send_message')
+        stop_checker = response.json().get('variable_name')
+        handler = stop_checker
+        time.sleep(1)
+
+@app.route('/send',methods = ['GET'])
+def send_message():
     global set_message_time
     global set_message
     global handler
 
-    thread = threading.Thread(target=handle_requests)
-    thread.start()
+    response = requests.get('http://localhost:8080/get_send_message_time')
+    set_message_time = response.json().get('variable_name')
+    response = requests.get('http://localhost:8080/get_send_message')
+    set_message = response.json().get('variable_name')
 
     handler = True
+
+    thread = threading.Thread(target=handle_requests)
+    thread.start()
 
     while handler:
         now = datetime.now()
@@ -79,14 +78,14 @@ async def send_message():
             pyautogui.moveTo(500, 1060, duration=0)
             pyautogui.click(500, 1060)
 
-            await asyncio.sleep(1)
+            time.sleep(1)
 
             # goes to WeChat and clicks it
 
             pyautogui.moveTo(700, 280, duration=0.5)  # serena is 670, 280. test is 600, 350
             pyautogui.click(700, 280)
 
-            await asyncio.sleep(1)
+            time.sleep(1)
 
             # goes to serena's profile
 
@@ -102,9 +101,10 @@ async def send_message():
             pyautogui.moveTo(2, 2)
             pyautogui.click(2, 2)
             handler = False
+            return "success", 200
 
-        await asyncio.sleep(1)
-
+        time.sleep(1)
+    return "success", 201
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=42069)
