@@ -9,8 +9,6 @@ from discord.ext import commands
 from flask import jsonify, Flask
 import requests
 
-# 4/26/2023
-
 app = Flask(__name__)
 
 gn_target_time = ""
@@ -635,13 +633,17 @@ async def check_warning_time(message, send_message_time, set_message, warning_se
 @bot.tree.command(name="send", description="sends message at given time or in 2 minutes")
 async def send_message3(interaction: discord.Interaction, set_message: str, set_hour: int = None,
                         set_minute: int = None, set_second: int = None):
+
     global send_message_time
     global sending_message
     global warning_send_message_time
     global embeded3
     global message_checker
+    global message_stopper
     channel = interaction.channel
     await interaction.response.send_message(content="Send message has started!")
+
+    message_stopper = True
 
     timesa = datetime.now()
     time_right_now = timesa.strftime("%H:%M:%S")

@@ -8,8 +8,6 @@ import pyautogui
 import time
 from pynput.keyboard import Controller, Key
 
-# 4/26/2023
-
 app = Flask(__name__)
 
 loop = asyncio.new_event_loop()
@@ -53,6 +51,7 @@ def handle_requests():
     while stop_checker:
         response = requests.get('http://localhost:8080/stop_send_message')
         stop_checker = response.json().get('variable_name')
+        print(handler)
         handler = stop_checker
         time.sleep(1)
 
@@ -67,14 +66,14 @@ def send_message():
     response = requests.get('http://localhost:8080/get_send_message')
     set_message = response.json().get('variable_name')
 
-    handler = True
-
     thread = threading.Thread(target=handle_requests)
     thread.start()
 
+    handler = True
+
     while handler:
         now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
+        current_time = now.strftime("%H:%M:%S") 
 
         if current_time == set_message_time:
             pyautogui.moveTo(500, 1060, duration=0)
@@ -102,10 +101,10 @@ def send_message():
 
             pyautogui.moveTo(2, 2)
             pyautogui.click(2, 2)
-            handler = False
             return "success", 200
 
         time.sleep(1)
+
     return "success", 201
 
 if __name__ == '__main__':
