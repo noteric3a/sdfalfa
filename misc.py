@@ -8,6 +8,8 @@ import pyautogui
 import time
 from pynput.keyboard import Controller, Key
 
+# 4/26/2023
+
 app = Flask(__name__)
 
 loop = asyncio.new_event_loop()
@@ -45,15 +47,14 @@ def screenshot():
 
     return send_file(filename, mimetype='image/png'), 200
 
-def handle_requests():
-    global handler
-    stop_checker = True
-    while stop_checker:
+def handle_requests(stop_event):
+    while not stop_event.is_set():
         response = requests.get('http://localhost:8080/stop_send_message')
         stop_checker = response.json().get('variable_name')
-        print(handler)
-        handler = stop_checker
+        if not stop_checker:
+            stop_event.set()
         time.sleep(1)
+
 
 @app.route('/send',methods = ['GET'])
 def send_message():
@@ -66,46 +67,23 @@ def send_message():
     response = requests.get('http://localhost:8080/get_send_message')
     set_message = response.json().get('variable_name')
 
-    thread = threading.Thread(target=handle_requests)
-    thread.start()
-
     handler = True
+    stop_event = threading.Event()
+
+    thread = threading.Thread(target=handle_requests, args=(stop_event,))
+    thread.start()
 
     while handler:
         now = datetime.now()
-        current_time = now.strftime("%H:%M:%S") 
+        current_time = now.strftime("%H:%M:%S")
 
         if current_time == set_message_time:
-            pyautogui.moveTo(500, 1060, duration=0)
-            pyautogui.click(500, 1060)
+            # send message code here
+            handler = False
+            stop_event.set()
 
-            time.sleep(1)
-
-            # goes to WeChat and clicks it
-
-            pyautogui.moveTo(700, 280, duration=0.5)  # serena is 670, 280. test is 600, 350
-            pyautogui.click(700, 280)
-
-            time.sleep(1)
-
-            # goes to serena's profile
-
-            pyautogui.typewrite(set_message)
-
-            # types the message
-
-            keyboard.press(Key.enter)
-            keyboard.release(Key.enter)
-
-            # sends the message
-
-            pyautogui.moveTo(2, 2)
-            pyautogui.click(2, 2)
-            return "success", 200
-
-        time.sleep(1)
-
-    return "success", 201
+    thread.join()
+    return "success", 200
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=42069)
