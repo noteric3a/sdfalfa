@@ -834,7 +834,7 @@ def run_flask():
 
 
 async def run_discord():
-    await bot.start('MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GjKL5O.BaqdAAoJCfRKbrpLdn6E1fKWylt4lHudTdLNzI', reconnect=True)
+    await bot.start('MTA5ODc3MTgwMDc2ODM4OTE2MA.GrZKzV.wXSJ1NPyWzWnzHedC__avUk1cOiAgRL6T3LJxw', reconnect=True)
 
 
 # Start the Flask and Discord tasks
