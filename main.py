@@ -510,9 +510,6 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
              second: int = None):
     global embeded
     global gm_running
-    global gm_hour
-    global gm_minute
-    global gm_second
     global gm_target_time
     global gm_message
     global gm_start_date
@@ -530,18 +527,6 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
 
     channel = interaction.channel
     gm_target_time = await target_time_getter(hour, minute, second, 1)
-
-    time_list = gm_target_time.split(":")
-    gm_hour = int(time_list[0])
-    gm_minute = int(time_list[1])
-    gm_second = int(time_list[2])
-
-    if hour is None:
-        gm_hour = None
-    if minute is None:
-        gm_minute = None
-    if second is None:
-        gm_second = None
 
     gm_message = GoodMorningMessage()
     current_days = day(bot_type=1)
