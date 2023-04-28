@@ -411,7 +411,7 @@ async def on_message(message):
         async with aiohttp.ClientSession() as session:
             async with session.get('http://192.168.1.104:5001/set_gn_message') as resp:
                 if resp.status == 200:
-                    gm_message = message.content.lower().split("&")[1]
+                    gn_message = message.content.lower().split("&")[1]
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                                 binary=2,
                                                 bot_type2=2)
