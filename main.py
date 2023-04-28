@@ -27,6 +27,7 @@ gm_stop_num = 0
 gn_stop_num = 0
 warning_time_checker = True
 start_date = None
+gm_start_date = None
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 
@@ -477,78 +478,6 @@ async def on_message(message):
 
 gm_running = False
 
-
-@bot.tree.command(name="gm", description="gm bot")
-async def gm(interaction: discord.Interaction, hour: int = None, minute: int = None,
-             second: int = None):
-    global embeded
-    global gm_running
-    global gm_hour
-    global gm_minute
-    global gm_second
-    global gm_target_time
-    global gm_message
-
-    # Check if the command is already running
-    if gm_running:
-        await interaction.response.send_message("The GM bot is already running.")
-        return
-    else:
-        await interaction.response.send_message("The GM bot has started!")
-
-    while gm_stop_num != 1:
-        # Set the flag to indicate that the command is running
-        gm_running = True
-
-        channel = interaction.channel
-        gm_target_time = await target_time_getter(hour, minute, second, 1)
-
-        time_list = gm_target_time.split(":")
-        gm_hour = int(time_list[0])
-        gm_minute = int(time_list[1])
-        gm_second = int(time_list[2])
-
-        if hour is None:
-            gm_hour = None
-        if minute is None:
-            gm_minute = None
-        if second is None:
-            gm_second = None
-
-        gm_message = GoodMorningMessage()
-        current_days = day(bot_type=1)
-
-        # Create the initial embed
-        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
-                                    bot_type2=1)
-        embeded = await channel.send(embed=embede)
-
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get('http://localhost:5000/gm') as resp:
-                    if resp.status == 200:
-
-                        # Update the embed with a success message
-                        makeCurrentDay(bot_type=1, days=current_days)
-                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                    binary=3, bot_type2=1)
-                        await embeded.edit(embed=embede)
-                    else:
-                        # Update the embed with a failure message
-                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                    binary=2, bot_type2=1)
-                        await embeded.edit(embed=embede)
-
-        except Exception as e:
-            pass
-
-    # Update the embed with the final message and set the flag to indicate that the command has finished running
-    gm_running = False
-
-
-gn_running = False
-
-
 def get_seconds_until_next_time():
     current_time = datetime.now()
     next_time = current_time.replace(hour=15, minute=0, second=0)  # next time it runs will be at 3:00 PM
@@ -559,6 +488,106 @@ def get_seconds_until_next_time():
     delta = next_time - current_time
     return delta.seconds
 
+
+@bot.tree.command(name="gm", description="gm bot")
+async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None):
+    global gm_start_date
+
+    if gm_start_date is not None and gm_start_date.date() == datetime.now().date(): # so the code doesnt run twice
+        await interaction.response.send_message(content="Already running for today")
+
+    gm_start_date = datetime.now()
+    await interaction.response.send_message(content="Running.")
+    recursive = 200
+    while recursive == 200:
+        try:
+            recursive = await gm(interaction, hour, minute, second)
+        except Exception as e:
+            print(e)
+
+
+async def gm(interaction: discord.Interaction, hour: int = None, minute: int = None,
+             second: int = None):
+    global embeded
+    global gm_running
+    global gm_hour
+    global gm_minute
+    global gm_second
+    global gm_target_time
+    global gm_message
+    global gm_start_date
+    channel = interaction.channel
+
+    # Check if the command is already running
+    if gm_running:
+        await channel.send("The GM bot is already running.")
+        return
+    else:
+        await channel.send("The GM bot has started!")
+
+    # Set the flag to indicate that the command is running
+    gm_running = True
+
+    channel = interaction.channel
+    gm_target_time = await target_time_getter(hour, minute, second, 1)
+
+    time_list = gm_target_time.split(":")
+    gm_hour = int(time_list[0])
+    gm_minute = int(time_list[1])
+    gm_second = int(time_list[2])
+
+    if hour is None:
+        gm_hour = None
+    if minute is None:
+        gm_minute = None
+    if second is None:
+        gm_second = None
+
+    gm_message = GoodMorningMessage()
+    current_days = day(bot_type=1)
+
+    # Create the initial embed
+    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
+                                bot_type2=1)
+    embeded = await channel.send(embed=embede)
+
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get('http://localhost:5000/gm') as resp:
+                if resp.status == 200:
+
+                    # Update the embed with a success message
+                    makeCurrentDay(bot_type=1, days=current_days)
+                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                binary=3, bot_type2=1)
+                    await embeded.edit(embed=embede)
+                    await asyncio.sleep(get_seconds_until_next_time())
+                    gm_running = False
+                    gm_start_date = None
+                    return 200
+                else:
+                    # Update the embed with a failure message
+                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                binary=2, bot_type2=1)
+                    await embeded.edit(embed=embede)
+
+    except Exception as e:
+        print(e)
+        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                    binary=2, bot_type2=1)
+        await embeded.edit(embed=embede)
+
+    # Update the embed with the final message and set the flag to indicate that the command has finished running
+    gm_running = False
+
+    gm_start_date = None
+
+    return 201
+
+
+#########################################
+
+gn_running = False
 
 @bot.tree.command(name="gn", description="gn bot")
 async def gn_bot(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None):
@@ -629,6 +658,8 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
     start_date = None
 
     return 201
+
+#################
 
 
 @bot.tree.command(name="screenshot", description="takes a screenshot of wechat")
@@ -834,7 +865,7 @@ def run_flask():
 
 
 async def run_discord():
-    await bot.start('MTA5ODc3MTgwMDc2ODM4OTE2MA.GrZKzV.wXSJ1NPyWzWnzHedC__avUk1cOiAgRL6T3LJxw', reconnect=True)
+    await bot.start('MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GjKL5O.BaqdAAoJCfRKbrpLdn6E1fKWylt4lHudTdLNzI', reconnect=True)
 
 
 # Start the Flask and Discord tasks
