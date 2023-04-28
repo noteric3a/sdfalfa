@@ -328,7 +328,7 @@ async def on_message(message):
         async with aiohttp.ClientSession() as session:
             async with session.get('http://192.168.1.104:5000/reroll_gm_time') as resp:
                 if resp.status == 200:
-                    new_target_time = await target_time_getter(gm_hour, gm_minute, gm_second, bot_type=1)
+                    new_target_time = await target_time_getter(random_hour=gm_hour, random_minute=gm_minute, random_second=gm_second, bot_type=1)
                     gm_target_time = new_target_time
                     embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
                                                 binary=2,
@@ -341,7 +341,7 @@ async def on_message(message):
                     await embeded.edit(embed=embede)
                 else:
                     await message.channel.send("Couldnt reroll GM time.")
-    if message.content.lower().split("&")[0] == "set gm":
+    if message.content.lower().split("&")[0] == "set gm message":
         await message.delete()
         async with aiohttp.ClientSession() as session:
             async with session.get('http://192.168.1.104:5000/set_gm_message') as resp:
@@ -393,7 +393,7 @@ async def on_message(message):
         async with aiohttp.ClientSession() as session:
             async with session.get('http://192.168.1.104:5001/reroll_gn_time') as resp:
                 if resp.status == 200:
-                    new_target_time = await target_time_getter(gn_hour, gn_minute, gn_second, bot_type=2)
+                    new_target_time = await target_time_getter(random_hour=gn_hour, random_minute=gn_minute, random_second=gn_second,bot_type=2)
                     gn_target_time = new_target_time
                     embede = await create_embed(bot_type="GN bot", targetTime=new_target_time, message=gn_message,
                                                 binary=2,
@@ -406,12 +406,12 @@ async def on_message(message):
                     await embeded2.edit(embed=embede)
                 else:
                     await message.channel.send("Couldnt reroll GN time.")
-    if message.content.lower().split("&")[0] == "set gn":
+    if message.content.lower().split("&")[0] == "set gn message":
         await message.delete()
         async with aiohttp.ClientSession() as session:
             async with session.get('http://192.168.1.104:5001/set_gn_message') as resp:
                 if resp.status == 200:
-                    gn_message = message.content.lower().split("&")[1]
+                    gm_message = message.content.lower().split("&")[1]
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                                 binary=2,
                                                 bot_type2=2)
@@ -431,7 +431,40 @@ async def on_message(message):
                                     binary=2,
                                     bot_type2=3)
         await embeded3.edit(embed=embede)
-
+    if message.content.lower().split("&")[0] == "set gn time":
+        await message.delete()
+        gn_time_setter = message.content.lower().split("&")[1]
+        gn_time_set = gn_time_setter.split(":")
+        gn_hour_set = int(gn_time_set[0])
+        gn_minute_set = int(gn_time_set[1])
+        gn_second_set = int(gn_time_set[2])
+        gn_target_time = await target_time_getter(random_hour=gn_hour_set, random_minute=gn_minute_set, random_second=gn_second_set, bot_type=2)
+        embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
+                                    binary=2,
+                                    bot_type2=2)
+        await embeded2.edit(embed=embede)
+        await asyncio.sleep(0.3)
+        embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
+                                    binary=1,
+                                    bot_type2=2)
+        await embeded2.edit(embed=embede)
+    if message.content.lower().split("&")[0] == "set gm time":
+        await message.delete()
+        gm_time_setter = message.content.lower().split("&")[1]
+        gm_time_set = gm_time_setter.split(":")
+        gm_hour_set = int(gm_time_set[0])
+        gm_minute_set = int(gm_time_set[1])
+        gm_second_set = int(gm_time_set[2])
+        gm_target_time = await target_time_getter(random_hour=gm_hour_set, random_minute=gm_minute_set, random_second=gm_second_set, bot_type=2)
+        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                    binary=2,
+                                    bot_type2=1)
+        await embeded.edit(embed=embede)
+        await asyncio.sleep(0.3)
+        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                    binary=1,
+                                    bot_type2=1)
+        await embeded.edit(embed=embede)
 
 gm_running = False
 
@@ -500,7 +533,6 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
 
     # Update the embed with the final message and set the flag to indicate that the command has finished running
     gm_running = False
-
 
 gn_running = False
 

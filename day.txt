@@ -24,10 +24,11 @@
 24 - hello my favorite NPC | Date and TIme: 17/04/2023 06:06:50
 25 - haha im first good morning serena | Date and Time: 18/04/2023 05:29:00
 26 - anareS iH | Date and Time: 19/04/2023 06:22:44
-27- Skipped | -- (experiment)
+27 - Skipped | -- (experiment)
 28 - Hi serena | Date and Time: 21/04/2023 05:40:40 (hmmm serena woke up at 4:10 am to say good morning)
 29 - aneres iH | Date and Time: 22/04/2023 08:23:49 (saying gm earlier than i am)
 30 - Gm serena | Date and Time: 23/04/2023 06:49:19 (questioned my sanity again)
 31 - gm serena | Date and Time: 24/04/2023 06:22:34 (waking up at 4)
 32 - How's life | Date and Time: 25/04/2023 04:33:00
 33 - Good morning serena | Date and Time: 26/04/2023 05:20:00
+34 - good morning serena | Date and Time: 27/04/2023 05:06:07 (took forever to respond)
