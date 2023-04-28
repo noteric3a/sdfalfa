@@ -25,7 +25,7 @@ def screenshot():
 
     # goes to WeChat and clicks it
 
-    pyautogui.moveTo(700, 280, duration=0.5)  # serena is 670, 280. test is 600, 350
+    pyautogui.moveTo(700, 280, duration=0.5)  # serena is 700, 280. test is 600, 350
     pyautogui.click(700, 280)
 
     time.sleep(1)
