@@ -526,7 +526,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
     gm_target_time = await target_time_getter(hour, minute, second, 1)
 
     gm_message = GoodMorningMessage()
-    current_days = day(bot_type=1)
+
 
     # Create the initial embed
     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
@@ -538,10 +538,11 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
             if resp.status == 200:
 
                 # Update the embed with a success message
-                makeCurrentDay(bot_type=1, days=current_days)
                 embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                             binary=3, bot_type2=1)
                 await embeded.edit(embed=embede)
+                current_days = day(bot_type=1)
+                makeCurrentDay(bot_type=1, days=current_days)
                 await asyncio.sleep(get_seconds_until_next_time())
                 gm_running = False
                 gm_start_date = None
@@ -597,7 +598,7 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
     gn_target_time = await target_time_getter(hour, minute, second, bot_type=2)
 
     gn_message = GoodNightMessage()
-    current_days = day(bot_type=2)
+    
 
     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message, binary=1, bot_type2=2)
     embeded2 = await channel.send(embed=embede)
@@ -605,10 +606,11 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
     async with aiohttp.ClientSession() as session2:
         async with session2.get('http://localhost:5001/gn') as resp:
             if resp.status == 200:
-                makeCurrentDay(bot_type=2, days=current_days)
                 embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                             binary=3, bot_type2=2)
                 await embeded2.edit(embed=embede)
+                current_days = day(bot_type=2)
+                makeCurrentDay(bot_type=2, days=current_days)
                 await asyncio.sleep(get_seconds_until_next_time())
                 gn_running = False
                 start_date = None
