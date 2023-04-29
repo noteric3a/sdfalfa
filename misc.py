@@ -25,7 +25,7 @@ def screenshot():
 
     # goes to WeChat and clicks it
 
-    pyautogui.moveTo(700, 280, duration=0.5)  # serena is 670, 280. test is 600, 350
+    pyautogui.moveTo(700, 280, duration=0.5)  # serena is 700, 280. test is 600, 350
     pyautogui.click(700, 280)
 
     time.sleep(1)
@@ -79,41 +79,11 @@ def send_message():
 
         if current_time == set_message_time:
             # send message code here
-            pyautogui.moveTo(500, 1060, duration=0)
-            pyautogui.click(500, 1060)
-
-            time.sleep(1)
-
-            # goes to WeChat and clicks it
-
-            pyautogui.moveTo(700, 280, duration=0.5)  # serena is 670, 280. test is 600, 350
-            pyautogui.click(700, 280)
-
-            time.sleep(1)
-
-            # goes to serena's profile
-
-            pyautogui.typewrite(set_message)
-
-            # types the message
-
-            keyboard.press(Key.enter)
-            keyboard.release(Key.enter)
-
-            # sends the message
-
-            pyautogui.moveTo(2, 2)
-            pyautogui.click(2, 2)
-
-            # clicks off
-
             handler = False
             stop_event.set()
-            thread.join()
-            return "success", 200
 
     thread.join()
-    return "not success", 201
+    return "success", 200
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=42069)
+    app.run(host='0.0.0.0', port=42069)

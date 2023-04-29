@@ -82,7 +82,6 @@ def run_script():
     gn_message = response.json().get('variable_name')
     thread = threading.Thread(target=handle_requests)
     thread.start()
-    print("Gn message: " + gn_message)
     while gn_stopper:
         current_time = datetime.now().strftime("%H:%M:%S")
         try:
@@ -91,9 +90,7 @@ def run_script():
                 WeChatTask(gn_message)
                 # sends a success message to turn the embed green
                 gn_stopper = False
-                run_handle_requests = False
-                thread.join()
-                return "Script stopped successfully.", 200
+                return "Script started successfully.", 200
             time.sleep(1)
         except Exception as e:
             return f"Error: {e}", 500
@@ -127,4 +124,4 @@ def set_gn_message():
 
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=5001)
+    app.run(host='0.0.0.0', port=5001)

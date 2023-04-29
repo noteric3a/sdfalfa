@@ -95,8 +95,7 @@ def run_script():
                 WeChatTask(gm_message)
                 # sends a success message to turn the embed green
                 gm_stopper = False
-                run_handle_requests = False
-                return "script stopped", 200
+                return "success", 200
             time.sleep(1)
         except Exception as e:
             return f"Error: {e}", 500
@@ -130,4 +129,4 @@ def set_gm_message():
 
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=5000)
+    app.run(host='0.0.0.0', port=5000)
