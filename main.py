@@ -2,12 +2,12 @@ import asyncio
 import io
 from datetime import datetime, timedelta
 from random import randint
+
 import aiohttp
 import discord
 from discord import File
 from discord.ext import commands
 from flask import jsonify, Flask
-import requests
 
 # 4/26/2023
 
@@ -333,7 +333,7 @@ async def on_message(message):
         async with aiohttp.ClientSession() as session:
             async with session.get('http://localhost:5000/reroll_gm_time') as resp:
                 if resp.status == 200:
-                    new_target_time = await target_time_getter(gm_hour, gm_minute, gm_second, bot_type=1)
+                    new_target_time = await target_time_getter(random_hour=None, random_minute=None, random_second=None, bot_type=1)
                     gm_target_time = new_target_time
                     embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
                                                 binary=2,
@@ -399,7 +399,7 @@ async def on_message(message):
         async with aiohttp.ClientSession() as session:
             async with session.get('http://localhost:5001/reroll_gn_time') as resp:
                 if resp.status == 200:
-                    new_target_time = await target_time_getter(gn_hour, gn_minute, gn_second, bot_type=2)
+                    new_target_time = await target_time_getter(random_hour=None, random_minute=None, random_second=None, bot_type=2)
                     gn_target_time = new_target_time
                     embede = await create_embed(bot_type="GN bot", targetTime=new_target_time, message=gn_message,
                                                 binary=2,
@@ -535,32 +535,24 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
                                 bot_type2=1)
     embeded = await channel.send(embed=embede)
+    async with aiohttp.ClientSession() as session:
+        async with session.get('http://localhost:5000/gm') as resp:
+            if resp.status == 200:
 
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get('http://localhost:5000/gm') as resp:
-                if resp.status == 200:
-
-                    # Update the embed with a success message
-                    makeCurrentDay(bot_type=1, days=current_days)
-                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                binary=3, bot_type2=1)
-                    await embeded.edit(embed=embede)
-                    await asyncio.sleep(get_seconds_until_next_time())
-                    gm_running = False
-                    gm_start_date = None
-                    return 200
-                else:
-                    # Update the embed with a failure message
-                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                binary=2, bot_type2=1)
-                    await embeded.edit(embed=embede)
-
-    except Exception as e:
-        print(e)
-        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                    binary=2, bot_type2=1)
-        await embeded.edit(embed=embede)
+                # Update the embed with a success message
+                makeCurrentDay(bot_type=1, days=current_days)
+                embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                            binary=3, bot_type2=1)
+                await embeded.edit(embed=embede)
+                await asyncio.sleep(get_seconds_until_next_time())
+                gm_running = False
+                gm_start_date = None
+                return 200
+            else:
+                # Update the embed with a failure message
+                embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                            binary=2, bot_type2=1)
+                await embeded.edit(embed=embede)
 
     # Update the embed with the final message and set the flag to indicate that the command has finished running
     gm_running = False
@@ -850,7 +842,7 @@ def run_flask():
 
 
 async def run_discord():
-    await bot.start('MTA5ODc3MTgwMDc2ODM4OTE2MA.GlRlZ_.Ys-Npcn15kNmVYVbwlDRYNWMcfYXwV0MEi2vB4', reconnect=True)
+    await bot.start('MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GjKL5O.BaqdAAoJCfRKbrpLdn6E1fKWylt4lHudTdLNzI', reconnect=True)
 
 
 # Start the Flask and Discord tasks
