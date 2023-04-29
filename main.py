@@ -533,31 +533,24 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                                 bot_type2=1)
     embeded = await channel.send(embed=embede)
 
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get('http://localhost:5000/gm') as resp:
-                if resp.status == 200:
+    async with aiohttp.ClientSession() as session:
+        async with session.get('http://localhost:5000/gm') as resp:
+            if resp.status == 200:
 
-                    # Update the embed with a success message
-                    makeCurrentDay(bot_type=1, days=current_days)
-                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                binary=3, bot_type2=1)
-                    await embeded.edit(embed=embede)
-                    await asyncio.sleep(get_seconds_until_next_time())
-                    gm_running = False
-                    gm_start_date = None
-                    return 200
-                else:
-                    # Update the embed with a failure message
-                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                binary=2, bot_type2=1)
-                    await embeded.edit(embed=embede)
-
-    except Exception as e:
-        print(e)
-        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                    binary=2, bot_type2=1)
-        await embeded.edit(embed=embede)
+                # Update the embed with a success message
+                makeCurrentDay(bot_type=1, days=current_days)
+                embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                            binary=3, bot_type2=1)
+                await embeded.edit(embed=embede)
+                await asyncio.sleep(get_seconds_until_next_time())
+                gm_running = False
+                gm_start_date = None
+                return 200
+            else:
+                # Update the embed with a failure message
+                embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                            binary=2, bot_type2=1)
+                await embeded.edit(embed=embede)
 
     # Update the embed with the final message and set the flag to indicate that the command has finished running
     gm_running = False
@@ -609,28 +602,21 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message, binary=1, bot_type2=2)
     embeded2 = await channel.send(embed=embede)
 
-    try:
-        async with aiohttp.ClientSession() as session2:
-            async with session2.get('http://localhost:5001/gn') as resp:
-                if resp.status == 200:
-                    makeCurrentDay(bot_type=2, days=current_days)
-                    embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
-                                                binary=3, bot_type2=2)
-                    await embeded2.edit(embed=embede)
-                    await asyncio.sleep(get_seconds_until_next_time())
-                    gn_running = False
-                    start_date = None
-                    return 200 # Recursive call
-                else:
-                    embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
-                                                binary=2, bot_type2=2)
-                    await embeded2.edit(embed=embede)
-    except Exception as e:
-        gn_running = False
-        print(e)
-        embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
-                                    binary=2, bot_type2=2)
-        await embeded2.edit(embed=embede)
+    async with aiohttp.ClientSession() as session2:
+        async with session2.get('http://localhost:5001/gn') as resp:
+            if resp.status == 200:
+                makeCurrentDay(bot_type=2, days=current_days)
+                embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
+                                            binary=3, bot_type2=2)
+                await embeded2.edit(embed=embede)
+                await asyncio.sleep(get_seconds_until_next_time())
+                gn_running = False
+                start_date = None
+                return 200 # Recursive call
+            else:
+                embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
+                                            binary=2, bot_type2=2)
+                await embeded2.edit(embed=embede)
 
     gn_running = False
 
