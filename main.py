@@ -333,7 +333,7 @@ async def on_message(message):
         async with aiohttp.ClientSession() as session:
             async with session.get('http://localhost:5000/reroll_gm_time') as resp:
                 if resp.status == 200:
-                    new_target_time = await target_time_getter(gm_hour, gm_minute, gm_second, bot_type=1)
+                    new_target_time = await target_time_getter(random_hour=None, random_minute=None, random_second=None, bot_type=1)
                     gm_target_time = new_target_time
                     embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
                                                 binary=2,
@@ -399,7 +399,7 @@ async def on_message(message):
         async with aiohttp.ClientSession() as session:
             async with session.get('http://localhost:5001/reroll_gn_time') as resp:
                 if resp.status == 200:
-                    new_target_time = await target_time_getter(gn_hour, gn_minute, gn_second, bot_type=2)
+                    new_target_time = await target_time_getter(random_hour=None, random_minute=None, random_second=None, bot_type=2)
                     gn_target_time = new_target_time
                     embede = await create_embed(bot_type="GN bot", targetTime=new_target_time, message=gn_message,
                                                 binary=2,
@@ -438,7 +438,7 @@ async def on_message(message):
                                     binary=2,
                                     bot_type2=3)
         await embeded3.edit(embed=embede)
-    if message.content.lower().split("&")[0] == "set gn time":
+    if message.content.lower().split("&")[0] == "set gn time" and message.content.lower() != "set gn time":
         await message.delete()
         gn_time_setter = message.content.lower().split("&")[1]
         gn_time_set = gn_time_setter.split(":")
@@ -456,7 +456,7 @@ async def on_message(message):
                                     binary=1,
                                     bot_type2=2)
         await embeded2.edit(embed=embede)
-    if message.content.lower().split("&")[0] == "set gm time":
+    if message.content.lower().split("&")[0] == "set gm time" and message.content.lower() != "set gm time":
         await message.delete()
         gm_time_setter = message.content.lower().split("&")[1]
         gm_time_set = gm_time_setter.split(":")
