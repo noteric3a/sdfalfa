@@ -500,10 +500,7 @@ async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int
     await interaction.response.send_message(content="Running.")
     recursive = 200
     while recursive == 200:
-        try:
             recursive = await gm(interaction, hour, minute, second)
-        except Exception as e:
-            print(e)
 
 
 async def gm(interaction: discord.Interaction, hour: int = None, minute: int = None,
@@ -585,10 +582,7 @@ async def gn_bot(interaction: discord.Interaction, hour: int = None, minute: int
     await interaction.response.send_message(content="Running.")
     recursive = 200
     while recursive == 200:
-        try:
             recursive = await gn_bot_recursive(interaction, hour, minute, second)
-        except Exception as e:
-            print(e)
 
 
 async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None):
