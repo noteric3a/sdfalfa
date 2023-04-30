@@ -2,12 +2,12 @@ import asyncio
 import io
 from datetime import datetime, timedelta
 from random import randint
+
 import aiohttp
 import discord
 from discord import File
 from discord.ext import commands
 from flask import jsonify, Flask
-import requests
 
 # 4/26/2023
 
@@ -229,7 +229,13 @@ def day(bot_type):
         with open("day.txt", "r") as file:
             lines = file.readlines()
         if lines:  # checks if its empty
-            days = lines[-1]
+            x = -1
+            while True:
+                if lines[x] == "":
+                    x -= 1
+                else:
+                    days = lines[x]
+                    break
             # Print the last line
             return days
         else:
@@ -238,7 +244,13 @@ def day(bot_type):
         with open("day2.txt", "r") as file:
             lines = file.readlines()
         if lines:  # checks if its empty
-            days = lines[-1]
+            x = -1
+            while True:
+                if lines[x] == "":
+                    x -= 1
+                else:
+                    days = lines[x]
+                    break
             # Print the last line
             return days
         else:
@@ -247,21 +259,18 @@ def day(bot_type):
 
 # gets the previous day according to the text file
 
-def makeCurrentDay(bot_type, days):
+def makeCurrentDay(bot_type, days, message, target_time):
     now = datetime.now()
     todayasstring = now.strftime("%d/%m/%Y")
     print(now)
     dayss = days.split("-")[0].strip()
     print(dayss)
     currentday = int(dayss) + 1
+    MessageKit = str(currentday) + " - " + message + " | " + "Date and Time: " + todayasstring + " " + target_time
     if bot_type == 1:
-        MessageKit = str(
-            currentday) + " - " + gm_message + " | " + "Date and Time: " + todayasstring + " " + gm_target_time
         with open("day.txt", "a") as file:
             file.write("\n" + MessageKit)
     elif bot_type == 2:
-        MessageKit = str(
-            currentday) + " - " + gn_message + " | " + "Date and Time: " + todayasstring + " " + gn_target_time
         with open("day2.txt", "a") as file:
             file.write("\n" + MessageKit)
 
@@ -532,7 +541,6 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
                                 bot_type2=1)
     embeded = await channel.send(embed=embede)
-
     async with aiohttp.ClientSession() as session:
         async with session.get('http://localhost:5000/gm') as resp:
             if resp.status == 200:
@@ -542,7 +550,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                                             binary=3, bot_type2=1)
                 await embeded.edit(embed=embede)
                 current_days = day(bot_type=1)
-                makeCurrentDay(bot_type=1, days=current_days)
+                makeCurrentDay(bot_type=1, days=current_days, message=gm_message,target_time=gm_target_time)
                 await asyncio.sleep(get_seconds_until_next_time())
                 gm_running = False
                 gm_start_date = None
@@ -588,7 +596,7 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
     channel = interaction.channel
 
     if gn_running:
-        await channel.send("The GN bot is already running.")
+        await chanel.send("The GN bot is already running.")
         return
     else:
         await channel.send("The GN bot has started!")
@@ -598,7 +606,7 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
     gn_target_time = await target_time_getter(hour, minute, second, bot_type=2)
 
     gn_message = GoodNightMessage()
-    
+    current_days = day(bot_type=2)
 
     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message, binary=1, bot_type2=2)
     embeded2 = await channel.send(embed=embede)
@@ -606,11 +614,10 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
     async with aiohttp.ClientSession() as session2:
         async with session2.get('http://localhost:5001/gn') as resp:
             if resp.status == 200:
+                makeCurrentDay(bot_type=2, days=current_days, message=gn_message, target_time=gn_target_time)
                 embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                             binary=3, bot_type2=2)
                 await embeded2.edit(embed=embede)
-                current_days = day(bot_type=2)
-                makeCurrentDay(bot_type=2, days=current_days)
                 await asyncio.sleep(get_seconds_until_next_time())
                 gn_running = False
                 start_date = None
@@ -619,6 +626,8 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
                 embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                             binary=2, bot_type2=2)
                 await embeded2.edit(embed=embede)
+
+
 
     gn_running = False
 
@@ -832,7 +841,7 @@ def run_flask():
 
 
 async def run_discord():
-    await bot.start('MTA5ODc3MTgwMDc2ODM4OTE2MA.GZgk5P.tN0PneF1l4u_IYbJG_1Fz3wxG92Gbtw8lpQrnc', reconnect=True)
+    await bot.start('MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GjKL5O.BaqdAAoJCfRKbrpLdn6E1fKWylt4lHudTdLNzI', reconnect=True)
 
 
 # Start the Flask and Discord tasks
