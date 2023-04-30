@@ -1,8 +1,8 @@
 import asyncio
 import io
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from random import randint
-
+import calendar
 import aiohttp
 import discord
 from discord import File
@@ -195,20 +195,28 @@ async def target_time_getter(hour, minute, second, bot_type):
 async def create_embed(bot_type, targetTime, message, binary, bot_type2):
     # getting the timestamp
 
-    datetimemodule = datetime.now()
+    datetime_module = datetime.now()
 
-    date_now = datetimemodule.strftime("%Y-%m-%d")
-    time_now = datetimemodule.strftime("%H:%M:%S")
+    date_now = datetime_module.strftime("%Y-%m-%d")
+    time_now = datetime_module.strftime("%H:%M:%S")
 
+
+    current_year = int(date_now.split("-")[0])
+    current_month = int(date_now.split("-")[1])
     current_day = int(date_now.split("-")[2])
+    current_hour = int(targetTime.split(":")[0])
+    current_minute = int(targetTime.split(":")[1])
+    current_second = int(targetTime.split(":")[2])
+
+    _, days_in_month = calendar.monthrange(current_year, current_month)  # the underscore is a placeholder because this returns a tuple
 
     if bot_type2 == 1:
-        if int(time_now.split(":")[0]) >= 9:
+        if int(time_now.split(":")[0]) >= 12:
             current_day += 1
+            if current_day > days_in_month:
+                current_day = 1
 
-    timestamp = datetime(int(date_now.split("-")[0]), int(date_now.split("-")[1]), current_day,
-                         int(targetTime.split(":")[0]), int(targetTime.split(":")[1]),
-                         int(targetTime.split(":")[2])).timestamp()
+    timestamp = datetime(current_year, current_month, current_day, current_hour, current_minute, current_second).timestamp()
     timestamp = str(timestamp).split(".")[0]
 
     if binary == 1:
@@ -587,11 +595,10 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
     gm_target_time = await target_time_getter(hour, minute, second, 1)
 
     gm_message = GoodMorningMessage()
-
     # Create the initial embed
-    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
-                                bot_type2=1)
-    embeded = await channel.send(embed=embede)
+    embed = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
+                               bot_type2=1)
+    embeded = await channel.send(embed=embed)
     async with aiohttp.ClientSession() as session:
         async with session.get('http://localhost:5000/gm') as resp:
             if resp.status == 200:
@@ -608,8 +615,8 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                 return 200
             else:
                 # Update the embed with a failure message
-                embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                            binary=2, bot_type2=1)
+                embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=2,
+                                            bot_type2=1)
                 await embeded.edit(embed=embede)
 
     # Update the embed with the final message and set the flag to indicate that the command has finished running
@@ -739,6 +746,7 @@ async def list_all_days(interaction: discord.Interaction, bot_type: int):
 message_queue = []
 queue_start = None
 
+
 @bot.tree.command(name="send", description="sends message at given time or in 2 minutes")
 async def send_message_queue(interaction: discord.Interaction, set_message: str, set_hour: int = None,
                              set_minute: int = None, set_second: int = None, interval: int = None):
@@ -757,7 +765,9 @@ async def send_message_queue(interaction: discord.Interaction, set_message: str,
         await message_queueer(target_time=target_time, warning_time=warning_time, interval=interval,
                               interaction=interaction, set_message=set_message)
     else:
-        await interaction.response.send_message(content=f"Send message has already started! If you put a set message, it has been added to the queue! current queue: {message_queue}" , ephemeral=True)
+        await interaction.response.send_message(
+            content=f"Send message has already started! If you put a set message, it has been added to the queue! current queue: {message_queue}",
+            ephemeral=True)
         return
 
 
