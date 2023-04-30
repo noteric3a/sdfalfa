@@ -804,7 +804,6 @@ async def message_queueer(target_time, warning_time, interval, interaction, set_
                     message_stopper = False
                     break  # completely stops
                 await asyncio.sleep(interval)  # sleeps for interval before going back to it
-            message_stopper = False
             break  # breaks from the loop
 
         if current_time == warning_time:  # if it gets to warning time, set the embed to yellow
