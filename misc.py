@@ -21,14 +21,10 @@ def screenshot():
     pyautogui.moveTo(500, 1060, duration=0)
     pyautogui.click(500, 1060)
 
-    time.sleep(1)
-
     # goes to WeChat and clicks it
 
-    pyautogui.moveTo(700, 280, duration=0.5)  # serena is 670, 280. test is 600, 350
+    pyautogui.moveTo(700, 280, duration=0)  # serena is 670, 280. test is 600, 350
     pyautogui.click(700, 280)
-
-    time.sleep(1)
 
     # get the app window and height
 
@@ -47,13 +43,6 @@ def screenshot():
 
     return send_file(filename, mimetype='image/png'), 200
 
-def handle_requests(stop_event):
-    while not stop_event.is_set():
-        response = requests.get('http://localhost:8080/stop_send_message')
-        stop_checker = response.json().get('variable_name')
-        if not stop_checker:
-            stop_event.set()
-        time.sleep(1)
 
 
 @app.route('/send',methods = ['GET'])
@@ -62,58 +51,40 @@ def send_message():
     global set_message
     global handler
 
-    response = requests.get('http://localhost:8080/get_send_message_time')
-    set_message_time = response.json().get('variable_name')
     response = requests.get('http://localhost:8080/get_send_message')
     set_message = response.json().get('variable_name')
 
-    handler = True
-    stop_event = threading.Event()
+    try:
+        pyautogui.moveTo(500, 1060, duration=0)
+        pyautogui.click(500, 1060)
 
-    thread = threading.Thread(target=handle_requests, args=(stop_event,))
-    thread.start()
+        # goes to WeChat and clicks it
 
-    while handler:
-        now = datetime.now()
-        current_time = now.strftime("%H:%M:%S")
+        pyautogui.moveTo(700, 280, duration=0)  # serena is 670, 280. test is 600, 350
+        pyautogui.click(700, 280)
 
-        if current_time == set_message_time:
-            # send message code here
-            pyautogui.moveTo(500, 1060, duration=0)
-            pyautogui.click(500, 1060)
+        # goes to serena's profile
 
-            time.sleep(1)
+        pyautogui.typewrite(set_message)
 
-            # goes to WeChat and clicks it
+        # types the message
 
-            pyautogui.moveTo(700, 280, duration=0.5)  # serena is 670, 280. test is 600, 350
-            pyautogui.click(700, 280)
+        keyboard.press(Key.enter)
+        keyboard.release(Key.enter)
 
-            time.sleep(1)
+        # sends the message
 
-            # goes to serena's profile
+        pyautogui.moveTo(2, 2)
+        pyautogui.click(2, 2)
 
-            pyautogui.typewrite(set_message)
+        # clicks off
 
-            # types the message
+        handler = False
+        return "success", 200
+    except Exception as e:
+        print(e)
+        return "not success", 201
 
-            keyboard.press(Key.enter)
-            keyboard.release(Key.enter)
-
-            # sends the message
-
-            pyautogui.moveTo(2, 2)
-            pyautogui.click(2, 2)
-
-            # clicks off
-
-            handler = False
-            stop_event.set()
-            thread.join()
-            return "success", 200
-
-    thread.join()
-    return "not success", 201
 
 if __name__ == '__main__':
     app.run(host='localhost', port=42069)
