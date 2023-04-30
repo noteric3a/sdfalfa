@@ -582,6 +582,8 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
     global gm_start_date
     channel = interaction.channel
 
+    gm_running = False
+
     # Check if the command is already running
     if gm_running:
         await channel.send("The GM bot is already running.")
