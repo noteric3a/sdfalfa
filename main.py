@@ -215,6 +215,7 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
             current_day += 1
             if current_day > days_in_month:
                 current_day = 1
+                current_month = int(date_now.split("-")[1]) + 1
 
     timestamp = datetime(current_year, current_month, current_day, current_hour, current_minute, current_second).timestamp()
     timestamp = str(timestamp).split(".")[0]
