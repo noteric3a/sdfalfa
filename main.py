@@ -588,7 +588,7 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
     channel = interaction.channel
 
     if gn_running:
-        await chanel.send("The GN bot is already running.")
+        await channel.send("The GN bot is already running.")
         return
     else:
         await channel.send("The GN bot has started!")
