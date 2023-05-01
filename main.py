@@ -28,6 +28,7 @@ gn_stop_num = 0
 warning_time_checker = True
 start_date = None
 gm_start_date = None
+TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GjKL5O.BaqdAAoJCfRKbrpLdn6E1fKWylt4lHudTdLNzI"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 
@@ -200,7 +201,6 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
     date_now = datetime_module.strftime("%Y-%m-%d")
     time_now = datetime_module.strftime("%H:%M:%S")
 
-
     current_year = int(date_now.split("-")[0])
     current_month = int(date_now.split("-")[1])
     current_day = int(date_now.split("-")[2])
@@ -208,16 +208,20 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
     current_minute = int(targetTime.split(":")[1])
     current_second = int(targetTime.split(":")[2])
 
-    _, days_in_month = calendar.monthrange(current_year, current_month)  # the underscore is a placeholder because this returns a tuple
+    _, days_in_month = calendar.monthrange(current_year,
+                                           current_month)  # the underscore is a placeholder because this returns a
+    # tuple
 
     if bot_type2 == 1:
         if int(time_now.split(":")[0]) >= 12:
             current_day += 1
-            if current_day > days_in_month:
-                current_day = 1
-                current_month = int(date_now.split("-")[1]) + 1
 
-    timestamp = datetime(current_year, current_month, current_day, current_hour, current_minute, current_second).timestamp()
+    if current_day > days_in_month:
+        current_day = 1
+        current_month = int(date_now.split("-")[1]) + 1
+
+    timestamp = datetime(current_year, current_month, current_day, current_hour, current_minute,
+                         current_second).timestamp()
     timestamp = str(timestamp).split(".")[0]
 
     if binary == 1:
@@ -233,11 +237,24 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
     elif binary == 6:
         colors = discord.Color.dark_gold()  # warning color
 
-    embede = discord.Embed(
-        title=f"Time for {bot_type}",
-        description=f"Time left: <t:{timestamp}:R> \n Target Time: {targetTime} \n Message: {message}",
-        color=colors
-    )
+    if bot_type2 == 1 or bot_type2 == 2:
+        embede = discord.Embed(
+            title=f"Time for {bot_type}",
+            description=f"Time left: <t:{timestamp}:R> \n Target Time: {targetTime} \n Message: {message}",
+            color=colors
+        )
+    elif bot_type2 == 3:
+        queue_priority_counter = 0
+        messages = ""
+        for message in message_queue:
+            queue_priority = str(queue_priority_counter)
+            messages += f"\n {queue_priority}: {message}"
+            queue_priority_counter += 1
+        embede = discord.Embed(
+            title=f"Time for {bot_type}",
+            description=f"Time left: <t:{timestamp}:R> \n Target Time: {targetTime} \n Message Queue: {messages}",
+            color=colors
+        )
 
     if bot_type2 == 1:
         with open("day.txt", "r") as file:
@@ -269,7 +286,7 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
 
         # Set the author, footer, and thumbnail of the embed
         embede.set_author(name="WeChat Bot")
-        embede.set_footer(text="updated 4/17/2023")
+        embede.set_footer(text="updated 4/30/2023")
 
     elif bot_type2 == 3:
         embede.add_field(name="IMPORTANT",
@@ -278,10 +295,9 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
 
         # Set the author, footer, and thumbnail of the embed
         embede.set_author(name="WeChat Bot")
-        embede.set_footer(text="updated 4/17/2023")
+        embede.set_footer(text="updated 4/30/2023")
 
     return embede
-
 
 # embed creator
 
@@ -352,7 +368,6 @@ async def on_ready():
         print(f"Synced {len(synced)} command(s)")
     except Exception as e:
         print(e)
-
 
 @bot.event
 async def on_message(message):
@@ -543,6 +558,41 @@ async def on_message(message):
                                     binary=1,
                                     bot_type2=1)
         await embeded.edit(embed=embede)
+
+@bot.event
+async def on_disconnect():
+    max_retries = 1000
+    retry_count = 0
+
+    print("Disconnected from Discord")
+
+    while retry_count < max_retries:
+        try:
+            await client.start(TOKEN)
+            print("Reconnected to Discord")
+            break
+        except Exception as e:
+            print(f"Error reconnecting to Discord: {e}")
+            content = {
+                "content": f"@Zw#7176 shits broken again. Error: {e}"
+            }
+            s = requests.post(
+                url="https://discord.com/api/webhooks/1098387542258233375/VjRx3is-DKkiO3z3VUkpOKhn27k8Dj1yEStUIMqfUzlDEW6f9Udbnn0uDrsNcVe9Q_cn",
+                json=content)
+            print(s)
+            retry_count += 1
+            await asyncio.sleep(600)
+
+
+async def try_reconnect():
+    while True:
+        print("Reconnecting...")
+        try:
+            await client.start(TOKEN)
+            print("Back online")
+            break
+        except:
+            await asyncio.sleep(600)
 
 
 gm_running = False
@@ -753,82 +803,92 @@ queue_start = None
 @bot.tree.command(name="send", description="sends message at given time or in 2 minutes")
 async def send_message_queue(interaction: discord.Interaction, set_message: str, set_hour: int = None,
                              set_minute: int = None, set_second: int = None, interval: int = None):
-    global queue_start
+    global queue_start, target_time, warning_time
     message_queue.append(set_message)  # adds the message to the queue
-
     if queue_start is None:
         if interval is None or interval < 5:
             interval = 30  # in seconds, will set the delay interval of the queue to 30 as default
 
         queue_start = "1"
         target_time, warning_time = await target_time_getter(set_hour, set_minute, set_second, 3)
-        print(target_time)
-        print(warning_time)
         await interaction.response.send_message(content="Send message is starting!")
         await message_queueer(target_time=target_time, warning_time=warning_time, interval=interval,
-                              interaction=interaction, set_message=set_message)
+                              interaction=interaction, set_message=set_message, queue_type=1)
     else:
         await interaction.response.send_message(
             content=f"Send message has already started! If you put a set message, it has been added to the queue! current queue: {message_queue}",
             ephemeral=True)
+        # Edit the existing embed message to include the new message in the queue
+        await message_queueer(target_time=target_time, warning_time=warning_time, interval=interval,
+                              interaction=interaction, set_message=set_message, queue_type=2)
         return
 
 
-async def message_queueer(target_time, warning_time, interval, interaction, set_message):
-    global message_queue
+async def message_queueer(target_time, warning_time, interval, interaction, set_message, queue_type):
+    global message_queue, embed_message_
     global queue_start
     global message_stopper
-    global embed_message
     channel = interaction.channel
-    embede = await create_embed(bot_type="Send Message", targetTime=target_time, message=set_message,
-                                binary=1, bot_type2=3)
-    embed_message = await channel.send(embed=embede)
-    while message_stopper:
-        current_time = datetime.now().strftime("%H:%M:%S")
-        if current_time == target_time:
-            for message in message_queue:  # runs until queue is empty
-                print("setting embed to red")
-                send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
-                                                        message=set_message,
-                                                        binary=2, bot_type2=3)
-                await embed_message.edit(embed=send_message_embed)
-                print("doing the task")
-                return_number = await send_message3(message=message)  # sends the message
-                send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
-                                                        message=set_message,
-                                                        binary=1, bot_type2=3)
-                print("setting back to blue")
-                await embed_message.edit(embed=send_message_embed)
-                if return_number == 201:  # fail number
+    if queue_type == 1:
+        embede = await create_embed(bot_type="Send Message", targetTime=target_time, message=set_message,
+                                    binary=1, bot_type2=3)
+        embed_message_ = await channel.send(embed=embede)
+        while message_stopper:
+            current_time = datetime.now().strftime("%H:%M:%S")
+            if current_time == target_time:
+                interval_stopper = 0
+                for message in message_queue:  # runs until queue is empty
+                    interval_stopper += 1
                     send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
                                                             message=set_message,
                                                             binary=2, bot_type2=3)
-                    await embed_message.edit(embed=send_message_embed)
-                    message_stopper = False
-                    break  # completely stops
-                await asyncio.sleep(interval)  # sleeps for interval before going back to it
-            break  # breaks from the loop
+                    await embed_message_.edit(embed=send_message_embed)
+                    return_number = await send_message3(message=message)  # sends the message
+                    send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
+                                                            message=set_message,
+                                                            binary=1, bot_type2=3)
+                    await embed_message_.edit(embed=send_message_embed)
+                    await channel.send(content=f"\"{message}\" has been sent")
+                    if return_number == 201:  # fail number
+                        send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
+                                                                message=set_message,
+                                                                binary=2, bot_type2=3)
+                        await embed_message_.edit(embed=send_message_embed)
+                        message_stopper = False
+                        break  # completely stops
+                    if interval_stopper < len(message_queue):  # if there's more than 1 message in the queue
+                        await asyncio.sleep(interval)  # sleeps for interval before going back to it
+                break  # breaks from the loop
 
-        if current_time == warning_time:  # if it gets to warning time, set the embed to yellow
+            if current_time == warning_time:  # if it gets to warning time, set the embed to yellow
+                send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
+                                                        message=set_message,
+                                                        binary=6, bot_type2=3)
+                await embed_message_.edit(embed=send_message_embed)
+            await asyncio.sleep(1)
+
+        if message_stopper is True:  # turns it green if it really ended
             send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
                                                     message=set_message,
-                                                    binary=6, bot_type2=3)
-            await embed_message.edit(embed=send_message_embed)
-        await asyncio.sleep(1)
+                                                    binary=3, bot_type2=3)
+            await embed_message_.edit(embed=send_message_embed)
+        else:
+            send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
+                                                    message=set_message,
+                                                    binary=2, bot_type2=3)
+            await embed_message_.edit(embed=send_message_embed)
 
-    if message_stopper is True:  # turns it green if it really ended
-        send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
-                                                message=set_message,
-                                                binary=3, bot_type2=3)
-        await embed_message.edit(embed=send_message_embed)
-    else:
+        message_queue = []  # resets queue
+        queue_start = None  # finished queue
+    elif queue_type == 2:
         send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
                                                 message=set_message,
                                                 binary=2, bot_type2=3)
-        await embed_message.edit(embed=send_message_embed)
-
-    message_queue = []  # resets queue
-    queue_start = None  # finished queue
+        await embed_message_.edit(embed=send_message_embed)
+        await asyncio.sleep(0.1)
+        embede = await create_embed(bot_type="Send Message", targetTime=target_time, message=set_message,
+                                    binary=1, bot_type2=3)
+        await embed_message_.edit(embed=embede)
 
 
 async def send_message3(message):
@@ -902,7 +962,7 @@ def run_flask():
 
 
 async def run_discord():
-    await bot.start('MTA5ODc3MTgwMDc2ODM4OTE2MA.GZgk5P.tN0PneF1l4u_IYbJG_1Fz3wxG92Gbtw8lpQrnc', reconnect=True)
+    await bot.start(TOKEN, reconnect=True)
 
 
 # Start the Flask and Discord tasks
