@@ -1,8 +1,9 @@
 import asyncio
-import io
-from datetime import datetime, timedelta, timezone
-from random import randint
 import calendar
+import io
+from datetime import datetime, timedelta
+from random import randint
+import logging
 import aiohttp
 import discord
 from discord import File
@@ -28,10 +29,14 @@ gn_stop_num = 0
 warning_time_checker = True
 start_date = None
 gm_start_date = None
-TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GjKL5O.BaqdAAoJCfRKbrpLdn6E1fKWylt4lHudTdLNzI"
+TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.Gnjec2.3wg7oHJMJvWy76hsO2gtrt-HXmwMmP-mM1NYJU"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
+logging.basicConfig(filename='main.log', level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
+def logger(event_name, event_details):
+    logging.info(f"{event_name}: {event_details}")
 def GoodMorningMessage():
     global gmMessage
     GenericListOfGoodMorning = ['Hi', 'Serena hows life', 'How\'s life', 'How\'s life serena', 'Hiya', 'Oi', 'Boop',
@@ -389,19 +394,27 @@ async def on_message(message):
             async with session.get('http://localhost:5000/stop_gm') as resp:
                 if resp.status == 200:
                     gm_stop_num = 1
+
+                    logger("stop_gm", "success")
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                                 binary=2,
                                                 bot_type2=1)
                     await embeded.edit(embed=embede)
+                    logger("stop_gm, embed changed", "success")
                     pass
                 else:
+                    logger("stop_gm", "failed")
                     await message.channel.send("Failed to stop GM script.")
     if message.content.lower() == "reroll gm message":  # do not make into elif statements because it won't go to the next one if false
         await message.delete()
         async with aiohttp.ClientSession() as session:
             async with session.get('http://localhost:5000/reroll_gm_message') as resp:
                 if resp.status == 200:
+
                     gm_message = GoodMorningMessage()
+
+                    logger("rerolling gm message", "success")
+
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                                 binary=2,
                                                 bot_type2=1)
@@ -411,6 +424,8 @@ async def on_message(message):
                                                 binary=1,
                                                 bot_type2=1)
                     await embeded.edit(embed=embede)
+
+                    logger("rerolling gm message, embed changed", "success")
                 else:
                     await message.channel.send("Couldnt reroll GM message.")
     if message.content.lower() == "reroll gm time":
@@ -420,6 +435,7 @@ async def on_message(message):
                 if resp.status == 200:
                     new_target_time = await target_time_getter(hour=None, minute=None, second=None, bot_type=1)
                     gm_target_time = new_target_time
+                    logger("rerolling gm time", "success")
                     embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
                                                 binary=2,
                                                 bot_type2=1)
@@ -429,6 +445,7 @@ async def on_message(message):
                                                 binary=1,
                                                 bot_type2=1)
                     await embeded.edit(embed=embede)
+                    logger("rerolling gm time, embed changed", "success")
                 else:
                     await message.channel.send("Couldnt reroll GM time.")
     if message.content.lower().split("&")[0] == "set gm message":
@@ -437,7 +454,7 @@ async def on_message(message):
             async with session.get('http://localhost:5000/set_gm_message') as resp:
                 if resp.status == 200:
                     gm_message = message.content.lower().split("&")[1]
-                    print(gm_message)
+                    logger("setting gm message", "success")
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                                 binary=2,
                                                 bot_type2=1)
@@ -447,6 +464,7 @@ async def on_message(message):
                                                 binary=1,
                                                 bot_type2=1)
                     await embeded.edit(embed=embede)
+                    logger("setting gm message, embed changed", "success")
                 else:
                     await message.channel.send("Couldnt set GM message.")
     if message.content.lower() == "stop gn":
@@ -455,10 +473,12 @@ async def on_message(message):
             async with session.get('http://localhost:5001/stop_gn') as resp:
                 if resp.status == 200:
                     gn_stop_num = 1
+                    logger("stopping gn", "success")
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                                 binary=2,
                                                 bot_type2=2)
                     await embeded2.edit(embed=embede)
+                    logger("stopping gn, embed changed", "success")
                     pass
                 else:
                     await message.channel.send("Failed to stop GN script.")
@@ -468,6 +488,7 @@ async def on_message(message):
             async with session.get('http://localhost:5001/reroll_gn_message') as resp:
                 if resp.status == 200:
                     gn_message = GoodNightMessage()
+                    logger("rerolling gn_message", "success")
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                                 binary=2,
                                                 bot_type2=2)
@@ -477,6 +498,7 @@ async def on_message(message):
                                                 binary=1,
                                                 bot_type2=2)
                     await embeded2.edit(embed=embede)
+                    logger("rerolling gn_message, embed changed", "success")
                 else:
                     await message.channel.send("Couldnt reroll GN message.")
     if message.content.lower() == "reroll gn time":
@@ -486,6 +508,7 @@ async def on_message(message):
                 if resp.status == 200:
                     new_target_time = await target_time_getter(hour=None, minute=None, second=None, bot_type=2)
                     gn_target_time = new_target_time
+                    logger("rerolling gn_time", "success")
                     embede = await create_embed(bot_type="GN bot", targetTime=new_target_time, message=gn_message,
                                                 binary=2,
                                                 bot_type2=2)
@@ -495,6 +518,7 @@ async def on_message(message):
                                                 binary=1,
                                                 bot_type2=2)
                     await embeded2.edit(embed=embede)
+                    logger("rerolling gn_time, embed changed", "success")
                 else:
                     await message.channel.send("Couldnt reroll GN time.")
     if message.content.lower().split("&")[0] == "set gn message":
@@ -502,6 +526,7 @@ async def on_message(message):
         async with aiohttp.ClientSession() as session:
             async with session.get('http://localhost:5001/set_gn_message') as resp:
                 if resp.status == 200:
+                    logger("setting gn_message", "success")
                     gn_message = message.content.lower().split("&")[1]
                     print(gn_message)
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
@@ -513,15 +538,18 @@ async def on_message(message):
                                                 binary=1,
                                                 bot_type2=2)
                     await embeded2.edit(embed=embede)
+                    logger("setting gn_message, embed changed", "success")
                 else:
                     await message.channel.send("Couldnt set GN message.")
     if message.content.lower() == "stop message":
         await message.delete()
         message_stopper = False
+        logger("stopping message_send", "success")
         embede = await create_embed(bot_type="Send Message", targetTime=send_message_time, message=sending_message,
                                     binary=2,
                                     bot_type2=3)
         await embed_message.edit(embed=embede)
+        logger("stopping message_send, embed changed", "success")
     if message.content.lower().split("&")[0] == "set gn time" and message.content.lower() != "set gn time":
         await message.delete()
         gn_time_setter = message.content.lower().split("&")[1]
@@ -529,6 +557,7 @@ async def on_message(message):
         gn_hour = int(gn_time_set[0])
         gn_minute = int(gn_time_set[1])
         gn_second = int(gn_time_set[2])
+        logger("setting gn_time", "success")
         gn_target_time = await target_time_getter(hour=gn_hour, minute=gn_minute, second=gn_second,
                                                   bot_type=2)
         embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
@@ -540,6 +569,7 @@ async def on_message(message):
                                     binary=1,
                                     bot_type2=2)
         await embeded2.edit(embed=embede)
+        logger("setting gn_time, embed changed", "success")
     if message.content.lower().split("&")[0] == "set gm time" and message.content.lower() != "set gm time":
         await message.delete()
         gm_time_setter = message.content.lower().split("&")[1]
@@ -547,6 +577,7 @@ async def on_message(message):
         gm_hour = int(gm_time_set[0])
         gm_minute = int(gm_time_set[1])
         gm_second = int(gm_time_set[2])
+        logger("setting gm_time", "success")
         gm_target_time = await target_time_getter(hour=gm_hour, minute=gm_minute, second=gm_second,
                                                   bot_type=2)
         embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
@@ -558,6 +589,7 @@ async def on_message(message):
                                     binary=1,
                                     bot_type2=1)
         await embeded.edit(embed=embede)
+        logger("setting gm_time, embed changed", "success")
 
 @bot.event
 async def on_disconnect():
@@ -566,10 +598,13 @@ async def on_disconnect():
 
     print("Disconnected from Discord")
 
+    logger("bot_disconnect", "YO SHIT RAGGEDY")
+
     while retry_count < max_retries:
         try:
             await client.start(TOKEN)
             print("Reconnected to Discord")
+            logger("bot_disconnect", "nvm we good")
             break
         except Exception as e:
             print(f"Error reconnecting to Discord: {e}")
@@ -589,6 +624,7 @@ async def try_reconnect():
         print("Reconnecting...")
         try:
             await client.start(TOKEN)
+            logger("trying to reconnect", "success")
             print("Back online")
             break
         except:
@@ -614,13 +650,16 @@ async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int
     global gm_start_date
 
     if gm_start_date is not None and gm_start_date.date() == datetime.now().date():  # so the code doesnt run twice
+        logger("starting gm bot...", "already running for tdoay")
         await interaction.response.send_message(content="Already running for today")
 
     gm_start_date = datetime.now()
     await interaction.response.send_message(content="Running.")
     recursive = 200
     while recursive == 200:
+        logger("starting gm bot...", "Running!")
         recursive = await gm(interaction, hour, minute, second)
+        logger("starting gm bot...", "Finished!")
 
 
 async def gm(interaction: discord.Interaction, hour: int = None, minute: int = None,
@@ -646,28 +685,35 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
 
     channel = interaction.channel
     gm_target_time = await target_time_getter(hour, minute, second, 1)
+    logger("gm_target_time generated", f"Success! :{gm_target_time}")
 
     gm_message = GoodMorningMessage()
+    logger("gm_message generated", f"Success! :{gm_message}")
     # Create the initial embed
     embed = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
                                bot_type2=1)
     embeded = await channel.send(embed=embed)
+    logger("gm_bot", "Embed Sent!")
     async with aiohttp.ClientSession() as session:
+        logger("gm_bot", "Request sent!")
         async with session.get('http://localhost:5000/gm') as resp:
             if resp.status == 200:
-
+                logger("gm_bot", "Request Code 200!")
                 # Update the embed with a success message
                 embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                             binary=3, bot_type2=1)
                 await embeded.edit(embed=embede)
+                logger("gm_bot", "Embed is now green")
                 current_days = day(bot_type=1)
                 makeCurrentDay(bot_type=1, days=current_days, message=gm_message, target_time=gm_target_time)
+                logger("gm_bot", "Recorded the current day!")
                 await asyncio.sleep(get_seconds_until_next_time())
                 gm_running = False
                 gm_start_date = None
                 return 200
             else:
                 # Update the embed with a failure message
+                logger("gm_bot", f"uh-oh spagettio: {e}")
                 embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=2,
                                             bot_type2=1)
                 await embeded.edit(embed=embede)
@@ -676,7 +722,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
     gm_running = False
 
     gm_start_date = None
-
+    logger("gm_bot", "Returned 201")
     return 201
 
 

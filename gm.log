@@ -1,0 +1,43 @@
+2023-05-02 20:22:26,662 DEBUG asyncio MainThread : Using proactor: IocpProactor
+2023-05-02 20:22:26,670 INFO werkzeug MainThread : [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://localhost:5000
+2023-05-02 20:22:26,670 INFO werkzeug MainThread : [33mPress CTRL+C to quit[0m
+2023-05-02 20:23:34,425 DEBUG urllib3.connectionpool Thread-1 (process_request_thread) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:23:36,429 DEBUG urllib3.connectionpool Thread-1 (process_request_thread) : http://localhost:8080 "GET /get_gm_time HTTP/1.1" 200 29
+2023-05-02 20:23:36,430 DEBUG urllib3.connectionpool Thread-1 (process_request_thread) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:23:38,434 DEBUG urllib3.connectionpool Thread-1 (process_request_thread) : http://localhost:8080 "GET /get_gm_message HTTP/1.1" 200 25
+2023-05-02 20:23:38,435 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:23:40,440 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /get_gm_time HTTP/1.1" 200 29
+2023-05-02 20:23:40,441 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:23:42,445 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /get_gm_message HTTP/1.1" 200 25
+2023-05-02 20:23:42,446 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:23:44,449 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /stop_gm HTTP/1.1" 200 20
+2023-05-02 20:23:44,449 INFO root Thread-2 (handle_requests) : Requested message, time, and stop: GM_MESSAGE: Hiya, GM_TIME: 06:04:04, GM_STOP: 0
+2023-05-02 20:23:54,450 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:23:56,452 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /get_gm_time HTTP/1.1" 200 29
+2023-05-02 20:23:56,453 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:23:58,455 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /get_gm_message HTTP/1.1" 200 25
+2023-05-02 20:23:58,457 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:24:00,460 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /stop_gm HTTP/1.1" 200 20
+2023-05-02 20:24:00,460 INFO root Thread-2 (handle_requests) : Requested message, time, and stop: GM_MESSAGE: Hiya, GM_TIME: 06:04:04, GM_STOP: 0
+2023-05-02 20:24:10,461 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:24:12,464 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /get_gm_time HTTP/1.1" 200 29
+2023-05-02 20:24:12,465 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:24:14,468 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /get_gm_message HTTP/1.1" 200 25
+2023-05-02 20:24:14,470 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:24:16,472 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /stop_gm HTTP/1.1" 200 20
+2023-05-02 20:24:16,472 INFO root Thread-2 (handle_requests) : Requested message, time, and stop: GM_MESSAGE: Hiya, GM_TIME: 06:04:04, GM_STOP: 0
+2023-05-02 20:24:26,474 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:24:28,477 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /get_gm_time HTTP/1.1" 200 29
+2023-05-02 20:24:28,478 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:24:30,480 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /get_gm_message HTTP/1.1" 200 25
+2023-05-02 20:24:30,481 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:24:32,484 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /stop_gm HTTP/1.1" 200 20
+2023-05-02 20:24:32,484 INFO root Thread-2 (handle_requests) : Requested message, time, and stop: GM_MESSAGE: Hiya, GM_TIME: 06:04:04, GM_STOP: 0
+2023-05-02 20:24:42,486 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:24:44,488 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /get_gm_time HTTP/1.1" 200 29
+2023-05-02 20:24:44,489 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:24:46,493 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /get_gm_message HTTP/1.1" 200 25
+2023-05-02 20:24:46,494 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : Starting new HTTP connection (1): localhost:8080
+2023-05-02 20:24:48,498 DEBUG urllib3.connectionpool Thread-2 (handle_requests) : http://localhost:8080 "GET /stop_gm HTTP/1.1" 200 20
+2023-05-02 20:24:48,498 INFO root Thread-2 (handle_requests) : Requested message, time, and stop: GM_MESSAGE: Hiya, GM_TIME: 06:04:04, GM_STOP: 0

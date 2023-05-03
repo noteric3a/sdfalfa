@@ -1,28 +1,26 @@
-from flask import Flask, jsonify
-from datetime import datetime
-import pyautogui
-import time
-from pynput.keyboard import Key, Controller
-import requests
 import asyncio
 import threading
+import time
+from datetime import datetime
+import logging
+import pyautogui
+import requests
+from flask import Flask
+from pynput.keyboard import Key, Controller
 
 keyboard = Controller()
 
-
+logging.basicConfig(filename='gm.log', level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 def WeChatTask(message):
     print(pyautogui.size())
     pyautogui.moveTo(500, 1060, duration=0)
     pyautogui.click(500, 1060)
 
-    time.sleep(1)
-
     # goes to WeChat and clicks it
 
     pyautogui.moveTo(700, 280, duration=0.5)  # serena is 600, 280. test is 600, 350
     pyautogui.click(700, 280)
-
-    time.sleep(1)
 
     # goes to serena's profile
 
@@ -40,6 +38,8 @@ def WeChatTask(message):
 
     # clicks off
 
+def logger(event_name, event_details):
+    logging.info(f"{event_name}: {event_details}")
 
 app = Flask(__name__)
 
@@ -60,6 +60,7 @@ def handle_requests():
         gm_message = response_message.json().get('variable_name')
         response_stop = requests.get('http://localhost:8080/stop_gm')
         stop_num = response_stop.json().get('variable_name')
+        logger("Requested message, time, and stop", f"GM_MESSAGE: {gm_message}, GM_TIME: {gm_target_time}, GM_STOP: {stop_num}")  # logs the current variables
         if stop_num == 1:
             gm_stopper = False
             run_handle_requests = False
@@ -87,18 +88,25 @@ def run_script():
     thread = threading.Thread(target=handle_requests)
     thread.start()
 
+    print("GM message: " + gm_message)
+
     while gm_stopper:
         current_time = datetime.now().strftime("%H:%M:%S")
         try:
             if current_time == gm_target_time:
+                logger("Current_time equals Target_time", "Success")
                 # does the task
                 WeChatTask(gm_message)
+                logger("Task done", "Success")
                 # sends a success message to turn the embed green
                 gm_stopper = False
                 run_handle_requests = False
+                logger("Returning 200", "Success")
+                thread.join() # stops the thread
                 return "script stopped", 200
             time.sleep(1)
         except Exception as e:
+            logger("Returning 500", f"FAILED: {e}")
             return f"Error: {e}", 500
 
     # Set handle_requests flag to False

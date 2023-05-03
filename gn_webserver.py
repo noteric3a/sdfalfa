@@ -1,3 +1,5 @@
+import logging
+
 from flask import Flask
 from datetime import datetime
 import pyautogui
@@ -9,20 +11,20 @@ import threading
 
 keyboard = Controller()
 
+logging.basicConfig(filename='gn.log', level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
+def logger(event_name, event_details):
+    logging.info(f"{event_name}: {event_details}")
 def WeChatTask(message):
     print(pyautogui.size())
     pyautogui.moveTo(500, 1060, duration=0)
     pyautogui.click(500, 1060)
 
-    time.sleep(1)
-
     # goes to WeChat and clicks it
 
     pyautogui.moveTo(700, 280, duration=0.5)  # serena is 600, 280. test is 600, 350
     pyautogui.click(700, 280)
-
-    time.sleep(1)
 
     # goes to serena's profile
 
@@ -61,6 +63,8 @@ def handle_requests():
         gn_message = response_message.json().get('variable_name')
         response_stop = requests.get('http://localhost:8080/stop_gn')
         stop_num = response_stop.json().get('variable_name')
+        logger("Requested message, time, and stop",
+               f"GN_MESSAGE: {gn_message}, GN_TIME: {gn_target_time}, GN_STOP: {stop_num}")
         if stop_num == 1:
             gn_stopper = False
             run_handle_requests = False
@@ -87,11 +91,14 @@ def run_script():
         current_time = datetime.now().strftime("%H:%M:%S")
         try:
             if current_time == gn_target_time:
+                logger("Current_time equals Target_time", "Success")
                 # does the task
                 WeChatTask(gn_message)
+                logger("Task done", "Success")
                 # sends a success message to turn the embed green
                 gn_stopper = False
                 run_handle_requests = False
+                logger("Returning 200", "Success")
                 thread.join()
                 return "Script stopped successfully.", 200
             time.sleep(1)
