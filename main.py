@@ -29,14 +29,20 @@ gn_stop_num = 0
 warning_time_checker = True
 start_date = None
 gm_start_date = None
+gm_embed = None
+gn_embed = None
+send_message_embed = None
 TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.Gnjec2.3wg7oHJMJvWy76hsO2gtrt-HXmwMmP-mM1NYJU"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
+
 def logger(event_name, event_details):
     logging.info(f"{event_name}: {event_details}")
+
+
 def GoodMorningMessage():
     global gmMessage
     GenericListOfGoodMorning = ['Hi', 'Serena hows life', 'How\'s life', 'How\'s life serena', 'Hiya', 'Oi', 'Boop',
@@ -304,6 +310,7 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
 
     return embede
 
+
 # embed creator
 
 def day(bot_type):
@@ -341,14 +348,15 @@ def day(bot_type):
 
 # gets the previous day according to the text file
 
-def makeCurrentDay(bot_type, days, message, target_time):
+def makeCurrentDay(bot_type, days, message, mcd_target_time):
     now = datetime.now()
-    todayasstring = now.strftime("%d/%m/%Y")
+    today_as_string = now.strftime("%d/%m/%Y")
     print(now)
-    dayss = days.split("-")[0].strip()
-    print(dayss)
-    currentday = int(dayss) + 1
-    MessageKit = str(currentday) + " - " + message + " | " + "Date and Time: " + todayasstring + " " + target_time
+    current_days = days.split("-")[0].strip()
+    print(current_days)
+    current_day = int(current_days) + 1
+    MessageKit = str(
+        current_day) + " - " + message + " | " + "Date and Time: " + today_as_string + " " + mcd_target_time
     if bot_type == 1:
         with open("day.txt", "a") as file:
             file.write("\n" + MessageKit)
@@ -374,18 +382,21 @@ async def on_ready():
     except Exception as e:
         print(e)
 
+
 @bot.event
 async def on_message(message):
     global gm_target_time
-    global embeded
+    global gm_embed
     global gm_message
     global gn_target_time
-    global embeded2
+    global gn_embed
     global gn_message
     global gm_stop_num
     global gn_stop_num
+    global send_message_time
+    global warning_time
     global message_stopper
-    global embed_message
+    global interval
     global warning_time_checker
 
     if message.content.lower() == "stop gm":
@@ -399,7 +410,7 @@ async def on_message(message):
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                                 binary=2,
                                                 bot_type2=1)
-                    await embeded.edit(embed=embede)
+                    await gm_embed.edit(embed=embede)
                     logger("stop_gm, embed changed", "success")
                     pass
                 else:
@@ -418,12 +429,12 @@ async def on_message(message):
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                                 binary=2,
                                                 bot_type2=1)
-                    await embeded.edit(embed=embede)
+                    await gm_embed.edit(embed=embede)
                     await asyncio.sleep(0.3)
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                                 binary=1,
                                                 bot_type2=1)
-                    await embeded.edit(embed=embede)
+                    await gm_embed.edit(embed=embede)
 
                     logger("rerolling gm message, embed changed", "success")
                 else:
@@ -439,12 +450,12 @@ async def on_message(message):
                     embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
                                                 binary=2,
                                                 bot_type2=1)
-                    await embeded.edit(embed=embede)
+                    await gm_embed.edit(embed=embede)
                     await asyncio.sleep(0.3)
                     embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
                                                 binary=1,
                                                 bot_type2=1)
-                    await embeded.edit(embed=embede)
+                    await gm_embed.edit(embed=embede)
                     logger("rerolling gm time, embed changed", "success")
                 else:
                     await message.channel.send("Couldnt reroll GM time.")
@@ -458,12 +469,12 @@ async def on_message(message):
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                                 binary=2,
                                                 bot_type2=1)
-                    await embeded.edit(embed=embede)
+                    await gm_embed.edit(embed=embede)
                     await asyncio.sleep(0.3)
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                                 binary=1,
                                                 bot_type2=1)
-                    await embeded.edit(embed=embede)
+                    await gm_embed.edit(embed=embede)
                     logger("setting gm message, embed changed", "success")
                 else:
                     await message.channel.send("Couldnt set GM message.")
@@ -477,7 +488,7 @@ async def on_message(message):
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                                 binary=2,
                                                 bot_type2=2)
-                    await embeded2.edit(embed=embede)
+                    await gn_embed.edit(embed=embede)
                     logger("stopping gn, embed changed", "success")
                     pass
                 else:
@@ -492,12 +503,12 @@ async def on_message(message):
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                                 binary=2,
                                                 bot_type2=2)
-                    await embeded2.edit(embed=embede)
+                    await gn_embed.edit(embed=embede)
                     await asyncio.sleep(0.3)
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                                 binary=1,
                                                 bot_type2=2)
-                    await embeded2.edit(embed=embede)
+                    await gn_embed.edit(embed=embede)
                     logger("rerolling gn_message, embed changed", "success")
                 else:
                     await message.channel.send("Couldnt reroll GN message.")
@@ -512,12 +523,12 @@ async def on_message(message):
                     embede = await create_embed(bot_type="GN bot", targetTime=new_target_time, message=gn_message,
                                                 binary=2,
                                                 bot_type2=2)
-                    await embeded2.edit(embed=embede)
+                    await gn_embed.edit(embed=embede)
                     await asyncio.sleep(0.3)
                     embede = await create_embed(bot_type="GN bot", targetTime=new_target_time, message=gn_message,
                                                 binary=1,
                                                 bot_type2=2)
-                    await embeded2.edit(embed=embede)
+                    await gn_embed.edit(embed=embede)
                     logger("rerolling gn_time, embed changed", "success")
                 else:
                     await message.channel.send("Couldnt reroll GN time.")
@@ -532,12 +543,12 @@ async def on_message(message):
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                                 binary=2,
                                                 bot_type2=2)
-                    await embeded2.edit(embed=embede)
+                    await gn_embed.edit(embed=embede)
                     await asyncio.sleep(0.3)
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                                 binary=1,
                                                 bot_type2=2)
-                    await embeded2.edit(embed=embede)
+                    await gn_embed.edit(embed=embede)
                     logger("setting gn_message, embed changed", "success")
                 else:
                     await message.channel.send("Couldnt set GN message.")
@@ -545,10 +556,10 @@ async def on_message(message):
         await message.delete()
         message_stopper = False
         logger("stopping message_send", "success")
-        embede = await create_embed(bot_type="Send Message", targetTime=send_message_time, message=sending_message,
-                                    binary=2,
-                                    bot_type2=3)
-        await embed_message.edit(embed=embede)
+        embed = await create_embed(bot_type="Send Message", targetTime=send_message_time,
+                                   message=sending_message,
+                                   binary=2, bot_type2=3)
+        await send_message_embed.edit(embed=embed)
         logger("stopping message_send, embed changed", "success")
     if message.content.lower().split("&")[0] == "set gn time" and message.content.lower() != "set gn time":
         await message.delete()
@@ -563,12 +574,12 @@ async def on_message(message):
         embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                     binary=2,
                                     bot_type2=2)
-        await embeded2.edit(embed=embede)
+        await gn_embed.edit(embed=embede)
         await asyncio.sleep(0.3)
         embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                     binary=1,
                                     bot_type2=2)
-        await embeded2.edit(embed=embede)
+        await gn_embed.edit(embed=embede)
         logger("setting gn_time, embed changed", "success")
     if message.content.lower().split("&")[0] == "set gm time" and message.content.lower() != "set gm time":
         await message.delete()
@@ -583,13 +594,14 @@ async def on_message(message):
         embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                     binary=2,
                                     bot_type2=1)
-        await embeded.edit(embed=embede)
+        await gm_embed.edit(embed=embede)
         await asyncio.sleep(0.3)
         embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                     binary=1,
                                     bot_type2=1)
-        await embeded.edit(embed=embede)
+        await gm_embed.edit(embed=embede)
         logger("setting gm_time, embed changed", "success")
+
 
 @bot.event
 async def on_disconnect():
@@ -664,7 +676,7 @@ async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int
 
 async def gm(interaction: discord.Interaction, hour: int = None, minute: int = None,
              second: int = None):
-    global embeded
+    global gm_embed
     global gm_running
     global gm_target_time
     global gm_message
@@ -692,7 +704,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
     # Create the initial embed
     embed = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
                                bot_type2=1)
-    embeded = await channel.send(embed=embed)
+    gm_embed = await channel.send(embed=embed)
     logger("gm_bot", "Embed Sent!")
     async with aiohttp.ClientSession() as session:
         logger("gm_bot", "Request sent!")
@@ -702,10 +714,10 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                 # Update the embed with a success message
                 embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                             binary=3, bot_type2=1)
-                await embeded.edit(embed=embede)
+                await gm_embed.edit(embed=embede)
                 logger("gm_bot", "Embed is now green")
                 current_days = day(bot_type=1)
-                makeCurrentDay(bot_type=1, days=current_days, message=gm_message, target_time=gm_target_time)
+                makeCurrentDay(bot_type=1, days=current_days, message=gm_message, mcd_target_time=gm_target_time)
                 logger("gm_bot", "Recorded the current day!")
                 await asyncio.sleep(get_seconds_until_next_time())
                 gm_running = False
@@ -716,7 +728,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                 logger("gm_bot", f"uh-oh spagettio: {e}")
                 embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=2,
                                             bot_type2=1)
-                await embeded.edit(embed=embede)
+                await gm_embed.edit(embed=embede)
 
     # Update the embed with the final message and set the flag to indicate that the command has finished running
     gm_running = False
@@ -734,15 +746,20 @@ gn_running = False
 @bot.tree.command(name="gn", description="gn bot")
 async def gn_bot(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None):
     global start_date
+    global gn_embed
 
     if start_date is not None and start_date.date() == datetime.now().date():
         await interaction.response.send_message(content="Already running for today")
+        logger("gn_bot", "stopped due to Already Running Today")
 
     start_date = datetime.now()
     await interaction.response.send_message(content="Running.")
+    logger("gn_bot", "Running!")
     recursive = 200
     while recursive == 200:
+        logger("gn_bot", "bot started")
         recursive = await gn_bot_recursive(interaction, hour, minute, second)
+        logger("gn_bot", "bot finished")
 
 
 async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None):
@@ -750,7 +767,7 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
     global gn_running
     global gn_message
     global gn_target_time
-    global embeded2
+    global gn_embed
     channel = interaction.channel
 
     if gn_running:
@@ -762,33 +779,42 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
     gn_running = True
 
     gn_target_time = await target_time_getter(hour, minute, second, bot_type=2)
+    logger("gn_bot", f"gn_target_time: {gn_target_time}")
 
     gn_message = GoodNightMessage()
+    logger("gn_bot", f"gn_message: {gn_message}")
 
-    embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message, binary=1, bot_type2=2)
-    embeded2 = await channel.send(embed=embede)
+    embed = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message, binary=1, bot_type2=2)
+    gn_embed = await channel.send(embed=embed)
+    logger("gn_bot", "Embed Sent")
 
+    logger("gn_bot", "started session")
     async with aiohttp.ClientSession() as session2:
         async with session2.get('http://localhost:5001/gn') as resp:
             if resp.status == 200:
-                embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
-                                            binary=3, bot_type2=2)
-                await embeded2.edit(embed=embede)
+                logger("gn_bot", "200 recieved from webserver")
+                embed = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
+                                           binary=3, bot_type2=2)
+                await gn_embed.edit(embed=embed)
+                logger("gn_bot", "embed is now green")
                 current_days = day(bot_type=2)
-                makeCurrentDay(bot_type=2, days=current_days, message=gn_message, target_time=gn_target_time)
+                makeCurrentDay(bot_type=2, days=current_days, message=gn_message, mcd_target_time=gn_target_time)
+                logger("gn_bot", f"recorded today: {current_days}")
                 await asyncio.sleep(get_seconds_until_next_time())
                 gn_running = False
                 start_date = None
+                logger("gn_bot", "returning 200")
                 return 200  # Recursive call
             else:
                 embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                             binary=2, bot_type2=2)
-                await embeded2.edit(embed=embede)
+                await gn_embed.edit(embed=embede)
+                logger("gn_bot", f"uh-oh spagettio, got a different response code: {resp.status}")
 
     gn_running = False
 
     start_date = None
-
+    logger("gn_bot", "returning 201")
     return 201
 
 
@@ -798,17 +824,25 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
 @bot.tree.command(name="screenshot", description="takes a screenshot of wechat")
 async def screenshot(interaction: discord.Interaction):
     await interaction.response.send_message(content="WeChat Screenshot.")
+    logger("Screenshot", "sent the message")
     try:
         async with aiohttp.ClientSession() as session:
+            logger("Screenshot", "started session, awaiting screenshot")
             async with session.get('http://localhost:42069/screenshot') as resp:
                 if resp.status == 200:
+                    logger("Screenshot", "200")
                     file_data = io.BytesIO(await resp.read())
+                    logger("Screenshot", "reading file")
                     file = File(file_data, filename='screenshot.png')
                     await interaction.channel.send(file=file)
+                    logger("Screenshot", "sent the screenshot")
                 else:
-                    await interaction.channel.send('failed')
+                    await interaction.channel.send(f'failed: {resp.status}')
+                    logger("Screenshot", "failed after sending request")
 
     except Exception as e:
+        print(f"Screenshot Failed: {e}")
+        logger("Screenshot", f"failed by starting session: {e}")
         pass
 
 
@@ -849,36 +883,38 @@ queue_start = None
 @bot.tree.command(name="send", description="sends message at given time or in 2 minutes")
 async def send_message_queue(interaction: discord.Interaction, set_message: str, set_hour: int = None,
                              set_minute: int = None, set_second: int = None, interval: int = None):
-    global queue_start, target_time, warning_time
+    global queue_start, send_message_time, warning_time
     message_queue.append(set_message)  # adds the message to the queue
     if queue_start is None:
         if interval is None or interval < 5:
             interval = 30  # in seconds, will set the delay interval of the queue to 30 as default
 
         queue_start = "1"
-        target_time, warning_time = await target_time_getter(set_hour, set_minute, set_second, 3)
+        send_message_time, warning_time = await target_time_getter(set_hour, set_minute, set_second, 3)
         await interaction.response.send_message(content="Send message is starting!")
-        await message_queueer(target_time=target_time, warning_time=warning_time, interval=interval,
-                              interaction=interaction, set_message=set_message, queue_type=1)
+        await message_queue_function(target_time=send_message_time, warning_time=warning_time, interval=interval,
+                                     interaction=interaction, set_message=set_message, queue_type=1)
     else:
         await interaction.response.send_message(
             content=f"Send message has already started! If you put a set message, it has been added to the queue! current queue: {message_queue}",
             ephemeral=True)
         # Edit the existing embed message to include the new message in the queue
-        await message_queueer(target_time=target_time, warning_time=warning_time, interval=interval,
-                              interaction=interaction, set_message=set_message, queue_type=2)
+        await message_queue_function(target_time=send_message_time, warning_time=warning_time, interval=interval,
+                                     interaction=interaction, set_message=set_message, queue_type=2)
         return
 
 
-async def message_queueer(target_time, warning_time, interval, interaction, set_message, queue_type):
-    global message_queue, embed_message_
+async def message_queue_function(target_time, warning_time, interval, interaction, set_message, queue_type):
+    global message_queue
+    global send_message_embed
     global queue_start
     global message_stopper
     channel = interaction.channel
     if queue_type == 1:
-        embede = await create_embed(bot_type="Send Message", targetTime=target_time, message=set_message,
-                                    binary=1, bot_type2=3)
-        embed_message_ = await channel.send(embed=embede)
+        embed = await create_embed(bot_type="Send Message", targetTime=target_time, message=set_message,
+                                   binary=1, bot_type2=3)
+        send_message_embed = await channel.send(embed=embed)
+        message_stopper = True
         while message_stopper:
             current_time = datetime.now().strftime("%H:%M:%S")
             if current_time == target_time:
@@ -888,18 +924,18 @@ async def message_queueer(target_time, warning_time, interval, interaction, set_
                     send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
                                                             message=set_message,
                                                             binary=2, bot_type2=3)
-                    await embed_message_.edit(embed=send_message_embed)
+                    await send_message_embed.edit(embed=send_message_embed)
                     return_number = await send_message3(message=message)  # sends the message
                     send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
                                                             message=set_message,
                                                             binary=1, bot_type2=3)
-                    await embed_message_.edit(embed=send_message_embed)
+                    await send_message_embed.edit(embed=send_message_embed)
                     await channel.send(content=f"\"{message}\" has been sent")
                     if return_number == 201:  # fail number
                         send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
                                                                 message=set_message,
                                                                 binary=2, bot_type2=3)
-                        await embed_message_.edit(embed=send_message_embed)
+                        await send_message_embed.edit(embed=send_message_embed)
                         message_stopper = False
                         break  # completely stops
                     if interval_stopper < len(message_queue):  # if there's more than 1 message in the queue
@@ -907,34 +943,34 @@ async def message_queueer(target_time, warning_time, interval, interaction, set_
                 break  # breaks from the loop
 
             if current_time == warning_time:  # if it gets to warning time, set the embed to yellow
-                send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
-                                                        message=set_message,
-                                                        binary=6, bot_type2=3)
-                await embed_message_.edit(embed=send_message_embed)
+                message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
+                                                   message=set_message,
+                                                   binary=6, bot_type2=3)
+                await send_message_embed.edit(embed=message_embed)
             await asyncio.sleep(1)
 
         if message_stopper is True:  # turns it green if it really ended
-            send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
-                                                    message=set_message,
-                                                    binary=3, bot_type2=3)
-            await embed_message_.edit(embed=send_message_embed)
+            message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
+                                               message=set_message,
+                                               binary=3, bot_type2=3)
+            await send_message_embed.edit(embed=message_embed)
         else:
-            send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
-                                                    message=set_message,
-                                                    binary=2, bot_type2=3)
-            await embed_message_.edit(embed=send_message_embed)
+            message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
+                                               message=set_message,
+                                               binary=2, bot_type2=3)
+            await send_message_embed.edit(embed=message_embed)
 
         message_queue = []  # resets queue
         queue_start = None  # finished queue
     elif queue_type == 2:
-        send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
-                                                message=set_message,
-                                                binary=2, bot_type2=3)
-        await embed_message_.edit(embed=send_message_embed)
+        message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
+                                           message=set_message,
+                                           binary=2, bot_type2=3)
+        await send_message_embed.edit(embed=message_embed)
         await asyncio.sleep(0.1)
         embede = await create_embed(bot_type="Send Message", targetTime=target_time, message=set_message,
                                     binary=1, bot_type2=3)
-        await embed_message_.edit(embed=embede)
+        await send_message_embed.edit(embed=embede)
 
 
 async def send_message3(message):
