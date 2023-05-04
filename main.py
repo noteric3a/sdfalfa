@@ -847,34 +847,80 @@ async def screenshot(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="list_all_days", description="history of the messages")
-async def list_all_days(interaction: discord.Interaction, bot_type: int):
-    await interaction.response.send_message(content="Messages:")
+async def list_all_days(interaction: discord.Interaction, bot_type: int, page: int = None):
     dchannel = interaction.channel
+    embeds = []
+    message_string = ""
     if bot_type == 1:
-        message_string = ""
-        with open("day.txt", "r") as f:
+        with open("day.txt", "r") as f:  # opens gm file
             lines = f.readlines()
-        for i, messages in enumerate(lines, start=1):
-            message_string += f"{messages.strip()}\n"
-        message_embed = discord.Embed(
-            title="History of all messages sent",
-            description=message_string,
-            color=discord.Color.blurple()
-        )
-        await dchannel.send(embed=message_embed)
     elif bot_type == 2:
-        message_string = ""
-        with open("day2.txt", "r") as f:
+        with open("day2.txt", "r") as f:  # opens gn file
             lines = f.readlines()
-        for i, messages in enumerate(lines, start=1):
-            message_string += f"{messages.strip()}\n"
-        message_embed = discord.Embed(
-            title="History of all messages sent",
-            description=message_string,
-            color=discord.Color.blurple()
-        )
-        await dchannel.send(embed=message_embed)
 
+    for i, message in enumerate(lines, start=1):
+        message_string += f"{message.strip()}\n"
+
+        if i % 20 == 0 or i == len(lines):
+            message_embed = discord.Embed(
+                title="History of all messages sent",
+                description=message_string,
+                color=discord.Color.blurple()
+            )
+            embeds.append(message_embed)
+            message_string = ""
+
+    try:
+        if page is None:
+            message_index = 0  # indexing the list of the embeds, this is the first embed
+            await interaction.response.send_message(content="Page 1")
+        else:
+            if 0 <= page - 1 <= len(embeds):
+                message_index = page - 1  # if page is specified, will go to that page
+                await interaction.response.send_message(content=f"Page {page}")
+            else:
+                message_index = 0  # sets page to 0 if page is not valid
+                await interaction.response.send_message(content=f"Page {message_index}")
+    except Exception:
+        message_index = 0
+
+    message = await dchannel.send(embed=embeds[message_index])  # sends the first embed
+    await message.add_reaction("⏮️")  # adds this ⏮️ emoji, which will indicate to go to the first embed
+    await message.add_reaction("⬅️")  # adds this ⬅️ emoji, which will indicate the previous embed
+    await message.add_reaction("➡️")  # adds this ➡️ emoji, which will indicate the next embed
+    await message.add_reaction("⏭️")  # adds this ⏭️ emoji, which will indicate the last embed
+
+    def check(reaction, user):
+        return user == interaction.user and str(reaction.emoji) in ["⏮️", "⬅️", "➡️",
+                                                                    "⏭️"] and reaction.message == message
+
+    while True:
+        try:
+            reaction, user = await bot.wait_for("reaction_add", timeout=60, check=check)
+            """
+            keeps running until a reaction is sent within 60 seconds.
+            the reaction is the emoji sent by the user which is user
+            it then puts that into the check function respectively
+            """
+        except asyncio.TimeoutError:
+            break  # breaks from while loop
+
+        if str(reaction.emoji) == "⏭️":
+            message_index = len(embeds) - 1  # goes to the very end of the messages
+            await message.edit(embed=embeds[message_index])
+        elif str(reaction.emoji) == "➡️" and message_index < len(embeds) - 1:  # if the reaction emoji is equal to the emoji, and if the message index is less than the length of the list
+            message_index += 1
+            await message.edit(embed=embeds[message_index])
+        elif str(reaction.emoji) == "⬅️" and message_index > 0:
+            message_index -= 1
+            await message.edit(embed=embeds[message_index])
+        elif str(reaction.emoji) == "⏮️":
+            message_index = 0
+            await message.edit(embed=embeds[message_index])
+        await message.remove_reaction(reaction, user)
+
+
+########################################################
 
 message_queue = []
 queue_start = None
