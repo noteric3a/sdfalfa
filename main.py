@@ -6,6 +6,7 @@ from random import randint
 import logging
 import aiohttp
 import discord
+import requests
 from discord import File
 from discord.ext import commands
 from flask import jsonify, Flask
@@ -32,7 +33,7 @@ gm_start_date = None
 gm_embed = None
 gn_embed = None
 send_message_embed = None
-TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.Gnjec2.3wg7oHJMJvWy76hsO2gtrt-HXmwMmP-mM1NYJU"
+TOKEN = "MTA5ODc3MTgwMDc2ODM4OTE2MA.GBizV-.2wVol9ysvXD9WI9USh-p4_cGelHOqhckx6mMOo"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
@@ -614,7 +615,7 @@ async def on_disconnect():
 
     while retry_count < max_retries:
         try:
-            await client.start(TOKEN)
+            await bot.start(TOKEN)
             print("Reconnected to Discord")
             logger("bot_disconnect", "nvm we good")
             break
@@ -635,7 +636,7 @@ async def try_reconnect():
     while True:
         print("Reconnecting...")
         try:
-            await client.start(TOKEN)
+            await bot.start(TOKEN)
             logger("trying to reconnect", "success")
             print("Back online")
             break
@@ -725,7 +726,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                 return 200
             else:
                 # Update the embed with a failure message
-                logger("gm_bot", f"uh-oh spagettio: {e}")
+                logger("gm_bot", "uh-oh spagettio")
                 embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=2,
                                             bot_type2=1)
                 await gm_embed.edit(embed=embede)
@@ -771,7 +772,7 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
     channel = interaction.channel
 
     if gn_running:
-        await chanel.send("The GN bot is already running.")
+        await channel.send("The GN bot is already running.")
         return
     else:
         await channel.send("The GN bot has started!")
@@ -847,80 +848,34 @@ async def screenshot(interaction: discord.Interaction):
 
 
 @bot.tree.command(name="list_all_days", description="history of the messages")
-async def list_all_days(interaction: discord.Interaction, bot_type: int, page: int = None):
+async def list_all_days(interaction: discord.Interaction, bot_type: int):
+    await interaction.response.send_message(content="Messages:")
     dchannel = interaction.channel
-    embeds = []
-    message_string = ""
     if bot_type == 1:
-        with open("day.txt", "r") as f:  # opens gm file
+        message_string = ""
+        with open("day.txt", "r") as f:
             lines = f.readlines()
+        for i, messages in enumerate(lines, start=1):
+            message_string += f"{messages.strip()}\n"
+        message_embed = discord.Embed(
+            title="History of all messages sent",
+            description=message_string,
+            color=discord.Color.blurple()
+        )
+        await dchannel.send(embed=message_embed)
     elif bot_type == 2:
-        with open("day2.txt", "r") as f:  # opens gn file
+        message_string = ""
+        with open("day2.txt", "r") as f:
             lines = f.readlines()
+        for i, messages in enumerate(lines, start=1):
+            message_string += f"{messages.strip()}\n"
+        message_embed = discord.Embed(
+            title="History of all messages sent",
+            description=message_string,
+            color=discord.Color.blurple()
+        )
+        await dchannel.send(embed=message_embed)
 
-    for i, message in enumerate(lines, start=1):
-        message_string += f"{message.strip()}\n"
-
-        if i % 20 == 0 or i == len(lines):
-            message_embed = discord.Embed(
-                title="History of all messages sent",
-                description=message_string,
-                color=discord.Color.blurple()
-            )
-            embeds.append(message_embed)
-            message_string = ""
-
-    try:
-        if page is None:
-            message_index = 0  # indexing the list of the embeds, this is the first embed
-            await interaction.response.send_message(content="Page 1")
-        else:
-            if 0 <= page - 1 <= len(embeds):
-                message_index = page - 1  # if page is specified, will go to that page
-                await interaction.response.send_message(content=f"Page {page}")
-            else:
-                message_index = 0  # sets page to 0 if page is not valid
-                await interaction.response.send_message(content=f"Page {message_index}")
-    except Exception:
-        message_index = 0
-
-    message = await dchannel.send(embed=embeds[message_index])  # sends the first embed
-    await message.add_reaction("⏮️")  # adds this ⏮️ emoji, which will indicate to go to the first embed
-    await message.add_reaction("⬅️")  # adds this ⬅️ emoji, which will indicate the previous embed
-    await message.add_reaction("➡️")  # adds this ➡️ emoji, which will indicate the next embed
-    await message.add_reaction("⏭️")  # adds this ⏭️ emoji, which will indicate the last embed
-
-    def check(reaction, user):
-        return user == interaction.user and str(reaction.emoji) in ["⏮️", "⬅️", "➡️",
-                                                                    "⏭️"] and reaction.message == message
-
-    while True:
-        try:
-            reaction, user = await bot.wait_for("reaction_add", timeout=60, check=check)
-            """
-            keeps running until a reaction is sent within 60 seconds.
-            the reaction is the emoji sent by the user which is user
-            it then puts that into the check function respectively
-            """
-        except asyncio.TimeoutError:
-            break  # breaks from while loop
-
-        if str(reaction.emoji) == "⏭️":
-            message_index = len(embeds) - 1  # goes to the very end of the messages
-            await message.edit(embed=embeds[message_index])
-        elif str(reaction.emoji) == "➡️" and message_index < len(embeds) - 1:  # if the reaction emoji is equal to the emoji, and if the message index is less than the length of the list
-            message_index += 1
-            await message.edit(embed=embeds[message_index])
-        elif str(reaction.emoji) == "⬅️" and message_index > 0:
-            message_index -= 1
-            await message.edit(embed=embeds[message_index])
-        elif str(reaction.emoji) == "⏮️":
-            message_index = 0
-            await message.edit(embed=embeds[message_index])
-        await message.remove_reaction(reaction, user)
-
-
-########################################################
 
 message_queue = []
 queue_start = None
