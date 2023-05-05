@@ -33,7 +33,7 @@ gm_start_date = None
 gm_embed = None
 gn_embed = None
 send_message_embed = None
-TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GX1t9O.A7PgLBttKkpaA8MQs0bV3lnavmT7SqAiwOjQyU"
+TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.Gnjec2.3wg7oHJMJvWy76hsO2gtrt-HXmwMmP-mM1NYJU"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
@@ -707,29 +707,42 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                                bot_type2=1)
     gm_embed = await channel.send(embed=embed)
     logger("gm_bot", "Embed Sent!")
-    async with aiohttp.ClientSession() as session:
-        logger("gm_bot", "Request sent!")
-        async with session.get('http://localhost:5000/gm') as resp:
-            if resp.status == 200:
-                logger("gm_bot", "Request Code 200!")
-                # Update the embed with a success message
-                embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                            binary=3, bot_type2=1)
-                await gm_embed.edit(embed=embede)
-                logger("gm_bot", "Embed is now green")
-                current_days = day(bot_type=1)
-                makeCurrentDay(bot_type=1, days=current_days, message=gm_message, mcd_target_time=gm_target_time)
-                logger("gm_bot", "Recorded the current day!")
-                await asyncio.sleep(get_seconds_until_next_time())
-                gm_running = False
-                gm_start_date = None
-                return 200
-            else:
+    gn_stopper = True
+
+    while gn_stopper:
+        current_time = datetime.now().strftime("%H:%M:%S")
+        if current_time == gm_target_time:
+            try:
+                async with aiohttp.ClientSession() as session:
+                    logger("gm_bot", "Request sent!")
+                    async with session.get('http://localhost:5000/gm') as resp:
+                        if resp.status == 200:
+                            logger("gm_bot", "Request Code 200!")
+                            # Update the embed with a success message
+                            current_days = day(bot_type=1)
+                            makeCurrentDay(bot_type=1, days=current_days, message=gm_message, mcd_target_time=gm_target_time)
+                            logger("gm_bot", "Recorded the current day!")
+                            embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                        binary=3, bot_type2=1)
+                            await gm_embed.edit(embed=embede)
+                            logger("gm_bot", "Embed is now green")
+                            await asyncio.sleep(get_seconds_until_next_time())
+                            gm_running = False
+                            gm_start_date = None
+                            return 200
+                        else:
+                            logger("gm_bot", f"uh-oh spagettio")
+                            embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time,
+                                                        message=gm_message, binary=2,
+                                                        bot_type2=1)
+                            await gm_embed.edit(embed=embede)
+            except Exception as e:
                 # Update the embed with a failure message
                 logger("gm_bot", f"uh-oh spagettio")
                 embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=2,
                                             bot_type2=1)
                 await gm_embed.edit(embed=embede)
+                print(e)
 
     # Update the embed with the final message and set the flag to indicate that the command has finished running
     gm_running = False
@@ -779,39 +792,45 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
 
     gn_running = True
 
-    gn_target_time = await target_time_getter(hour, minute, second, bot_type=2)
+    gn_target_time = await target_time_getter(hour, minute, second, bot_type=2)  # gets the gn time
     logger("gn_bot", f"gn_target_time: {gn_target_time}")
 
-    gn_message = GoodNightMessage()
+    gn_message = GoodNightMessage()  # gets the gn message
     logger("gn_bot", f"gn_message: {gn_message}")
 
     embed = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message, binary=1, bot_type2=2)
     gn_embed = await channel.send(embed=embed)
-    logger("gn_bot", "Embed Sent")
+    logger("gn_bot", "Embed Sent")  # sends the embed
 
-    logger("gn_bot", "started session")
-    async with aiohttp.ClientSession() as session2:
-        async with session2.get('http://localhost:5001/gn') as resp:
-            if resp.status == 200:
-                logger("gn_bot", "200 recieved from webserver")
-                embed = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
-                                           binary=3, bot_type2=2)
-                await gn_embed.edit(embed=embed)
-                logger("gn_bot", "embed is now green")
-                current_days = day(bot_type=2)
-                makeCurrentDay(bot_type=2, days=current_days, message=gn_message, mcd_target_time=gn_target_time)
-                logger("gn_bot", f"recorded today: {current_days}")
-                await asyncio.sleep(get_seconds_until_next_time())
-                gn_running = False
-                start_date = None
-                logger("gn_bot", "returning 200")
-                return 200  # Recursive call
-            else:
-                embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
-                                            binary=2, bot_type2=2)
-                await gn_embed.edit(embed=embede)
-                logger("gn_bot", f"uh-oh spagettio, got a different response code: {resp.status}")
+    gn_stopper = True
 
+    while gn_stopper:
+        current_time = datetime.now().strftime("%H:%M:%S")
+        if current_time == gn_target_time:
+            logger("gn_bot", "started session")
+            async with aiohttp.ClientSession() as session2:
+                async with session2.get('http://localhost:5001/gn') as resp:
+                    if resp.status == 200:
+                        logger("gn_bot", "200 recieved from webserver")
+                        current_days = day(bot_type=2)
+                        makeCurrentDay(bot_type=2, days=current_days, message=gn_message, mcd_target_time=gn_target_time)
+                        logger("gn_bot", f"recorded today: {current_days}")
+                        embed = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
+                                                   binary=3, bot_type2=2)
+                        await gn_embed.edit(embed=embed)
+                        logger("gn_bot", "embed is now green")
+                        await asyncio.sleep(get_seconds_until_next_time())
+                        gn_running = False
+                        start_date = None
+                        logger("gn_bot", "returning 200")
+                        return 200  # Recursive call
+                    else:
+                        embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
+                                                    binary=2, bot_type2=2)
+                        await gn_embed.edit(embed=embede)
+                        logger("gn_bot", f"uh-oh spagettio, got a different response code: {resp.status}")
+                        gn_stopper = False
+        await asyncio.sleep(1)
     gn_running = False
 
     start_date = None
@@ -1038,6 +1057,7 @@ async def send_message3(message):
     except Exception as e:
         print(e)
         return 201
+
 
 
 # get requests from webserver to get the variables

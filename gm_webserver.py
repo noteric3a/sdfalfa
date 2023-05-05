@@ -47,26 +47,6 @@ gm_stopper = True
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 
-run_handle_requests = True
-def handle_requests():
-    global gm_target_time
-    global gm_message
-    global gm_stopper
-    global run_handle_requests
-    while run_handle_requests:
-        response_time = requests.get('http://localhost:8080/get_gm_time')
-        gm_target_time = response_time.json().get('variable_name')
-        response_message = requests.get('http://localhost:8080/get_gm_message')
-        gm_message = response_message.json().get('variable_name')
-        response_stop = requests.get('http://localhost:8080/stop_gm')
-        stop_num = response_stop.json().get('variable_name')
-        logger("Requested message, time, and stop", f"GM_MESSAGE: {gm_message}, GM_TIME: {gm_target_time}, GM_STOP: {stop_num}")  # logs the current variables
-        if stop_num == 1:
-            gm_stopper = False
-            run_handle_requests = False
-            break
-        time.sleep(10)
-
 
 @app.route('/gm', methods=['POST', 'GET'])
 def run_script():
@@ -85,34 +65,21 @@ def run_script():
     response = requests.get('http://localhost:8080/get_gm_message')
     gm_message = response.json().get('variable_name')
 
-    thread = threading.Thread(target=handle_requests)
-    thread.start()
-
     print("GM message: " + gm_message)
 
-    while gm_stopper:
-        current_time = datetime.now().strftime("%H:%M:%S")
-        try:
-            if current_time == gm_target_time:
-                logger("Current_time equals Target_time", "Success")
-                # does the task
-                WeChatTask(gm_message)
-                logger("Task done", "Success")
-                # sends a success message to turn the embed green
-                gm_stopper = False
-                run_handle_requests = False
-                logger("Returning 200", "Success")
-                thread.join() # stops the thread
-                return "script stopped", 200
-            time.sleep(1)
-        except Exception as e:
-            logger("Returning 500", f"FAILED: {e}")
-            return f"Error: {e}", 500
-
-    # Set handle_requests flag to False
-    run_handle_requests = False
-
-    return "Script stopped.", 201
+    try:
+        logger("Current_time equals Target_time", "Success")
+        # does the task
+        WeChatTask(gm_message)
+        logger("Task done", "Success")
+        # sends a success message to turn the embed green
+        gm_stopper = False
+        run_handle_requests = False
+        logger("Returning 200", "Success")
+        return "script stopped", 200
+    except Exception as e:
+        print(e)
+        return "Script stopped.", 201
 
 
 @app.route('/stop_gm', methods=['GET'])
