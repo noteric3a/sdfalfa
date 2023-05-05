@@ -33,7 +33,7 @@ gm_start_date = None
 gm_embed = None
 gn_embed = None
 send_message_embed = None
-TOKEN = "MTA5ODc3MTgwMDc2ODM4OTE2MA.GBizV-.2wVol9ysvXD9WI9USh-p4_cGelHOqhckx6mMOo"
+TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GX1t9O.A7PgLBttKkpaA8MQs0bV3lnavmT7SqAiwOjQyU"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
@@ -938,6 +938,8 @@ async def send_message_queue(interaction: discord.Interaction, set_message: str,
 
         queue_start = "1"
         send_message_time, warning_time = await target_time_getter(set_hour, set_minute, set_second, 3)
+        print(send_message_time)
+        print(warning_time)
         await interaction.response.send_message(content="Send message is starting!")
         await message_queue_function(target_time=send_message_time, warning_time=warning_time, interval=interval,
                                      interaction=interaction, set_message=set_message, queue_type=1)
@@ -968,23 +970,23 @@ async def message_queue_function(target_time, warning_time, interval, interactio
                 interval_stopper = 0
                 for message in message_queue:  # runs until queue is empty
                     interval_stopper += 1
-                    send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
+                    embed = await create_embed(bot_type="Send Message", targetTime=target_time,
                                                             message=set_message,
                                                             binary=2, bot_type2=3)
-                    await send_message_embed.edit(embed=send_message_embed)
+                    await send_message_embed.edit(embed=embed)
                     return_number = await send_message3(message=message)  # sends the message
-                    send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
+                    embed = await create_embed(bot_type="Send Message", targetTime=target_time,
                                                             message=set_message,
                                                             binary=1, bot_type2=3)
-                    await send_message_embed.edit(embed=send_message_embed)
-                    await channel.send(content=f"\"{message}\" has been sent")
+                    await send_message_embed.edit(embed=embed)
                     if return_number == 201:  # fail number
-                        send_message_embed = await create_embed(bot_type="Send Message", targetTime=target_time,
+                        embed = await create_embed(bot_type="Send Message", targetTime=target_time,
                                                                 message=set_message,
                                                                 binary=2, bot_type2=3)
-                        await send_message_embed.edit(embed=send_message_embed)
+                        await send_message_embed.edit(embed=embed)
                         message_stopper = False
                         break  # completely stops
+                    await channel.send(content=f"\"{message}\" has been sent")
                     if interval_stopper < len(message_queue):  # if there's more than 1 message in the queue
                         await asyncio.sleep(interval)  # sleeps for interval before going back to it
                 break  # breaks from the loop
@@ -1015,9 +1017,9 @@ async def message_queue_function(target_time, warning_time, interval, interactio
                                            binary=2, bot_type2=3)
         await send_message_embed.edit(embed=message_embed)
         await asyncio.sleep(0.1)
-        embede = await create_embed(bot_type="Send Message", targetTime=target_time, message=set_message,
+        embed = await create_embed(bot_type="Send Message", targetTime=target_time, message=set_message,
                                     binary=1, bot_type2=3)
-        await send_message_embed.edit(embed=embede)
+        await send_message_embed.edit(embed=embed)
 
 
 async def send_message3(message):
