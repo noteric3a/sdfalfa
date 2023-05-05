@@ -6,6 +6,7 @@ from random import randint
 import logging
 import aiohttp
 import discord
+import requests
 from discord import File
 from discord.ext import commands
 from flask import jsonify, Flask
@@ -32,7 +33,7 @@ gm_start_date = None
 gm_embed = None
 gn_embed = None
 send_message_embed = None
-TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.Gnjec2.3wg7oHJMJvWy76hsO2gtrt-HXmwMmP-mM1NYJU"
+TOKEN = "MTA5ODc3MTgwMDc2ODM4OTE2MA.GBizV-.2wVol9ysvXD9WI9USh-p4_cGelHOqhckx6mMOo"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
@@ -614,7 +615,7 @@ async def on_disconnect():
 
     while retry_count < max_retries:
         try:
-            await client.start(TOKEN)
+            await bot.start(TOKEN)
             print("Reconnected to Discord")
             logger("bot_disconnect", "nvm we good")
             break
@@ -635,7 +636,7 @@ async def try_reconnect():
     while True:
         print("Reconnecting...")
         try:
-            await client.start(TOKEN)
+            await bot.start(TOKEN)
             logger("trying to reconnect", "success")
             print("Back online")
             break
@@ -725,7 +726,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                 return 200
             else:
                 # Update the embed with a failure message
-                logger("gm_bot", f"uh-oh spagettio: {e}")
+                logger("gm_bot", f"uh-oh spagettio")
                 embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=2,
                                             bot_type2=1)
                 await gm_embed.edit(embed=embede)
@@ -771,7 +772,7 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
     channel = interaction.channel
 
     if gn_running:
-        await chanel.send("The GN bot is already running.")
+        await channel.send("The GN bot is already running.")
         return
     else:
         await channel.send("The GN bot has started!")
