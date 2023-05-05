@@ -33,7 +33,7 @@ gm_start_date = None
 gm_embed = None
 gn_embed = None
 send_message_embed = None
-TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.Gnjec2.3wg7oHJMJvWy76hsO2gtrt-HXmwMmP-mM1NYJU"
+TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GX1t9O.A7PgLBttKkpaA8MQs0bV3lnavmT7SqAiwOjQyU"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
