@@ -28,11 +28,17 @@ message_stopper = True
 gm_stop_num = 0
 gn_stop_num = 0
 warning_time_checker = True
-start_date = None
+gn_start_date = None
 gm_start_date = None
 gm_embed = None
 gn_embed = None
 send_message_embed = None
+gn_time_stored = ""
+gn_message_stored = ""
+gm_time_stored = ""
+gm_message_stored = ""
+gm_interaction = None
+gn_interaction = None
 TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GX1t9O.A7PgLBttKkpaA8MQs0bV3lnavmT7SqAiwOjQyU"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
@@ -373,6 +379,20 @@ intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.AutoShardedBot(command_prefix='!', intents=intents, auto_reconnect=True, heartbeat_interval=60)
 
+def rerun_if_disconnect(start_variable, bot_type, time):
+    global gm_interaction
+    global gn_interaction
+    timelist = time.split(":")
+    hour = timelist[0]
+    minute = timelist[1]
+    second = timelist[2]
+    if bot_type == 1:  # gm
+        if start_variable is not None:
+            gm(interaction=gm_interaction,hour=hour, minute=minute, second=second)
+    elif bot_type == 2:  # gn
+        if start_variable is not None:
+            gn_bot_recursive(interaction=gn_interaction, hour=hour, minute=minute, second=second)
+gm_running = False
 
 @bot.event
 async def on_ready():
@@ -399,6 +419,10 @@ async def on_message(message):
     global message_stopper
     global interval
     global warning_time_checker
+    global gm_time_stored
+    global gm_message_stored
+    global gn_message_stored
+    global gn_time_stored
 
     if message.content.lower() == "stop gm":
         await message.delete()
@@ -424,6 +448,7 @@ async def on_message(message):
                 if resp.status == 200:
 
                     gm_message = GoodMorningMessage()
+                    gm_message_stored = gm_message
 
                     logger("rerolling gm message", "success")
 
@@ -447,6 +472,7 @@ async def on_message(message):
                 if resp.status == 200:
                     new_target_time = await target_time_getter(hour=None, minute=None, second=None, bot_type=1)
                     gm_target_time = new_target_time
+                    gm_time_stored = new_target_time
                     logger("rerolling gm time", "success")
                     embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
                                                 binary=2,
@@ -466,6 +492,7 @@ async def on_message(message):
             async with session.get('http://localhost:5000/set_gm_message') as resp:
                 if resp.status == 200:
                     gm_message = message.content.lower().split("&")[1]
+                    gm_message_stored = gm_message
                     logger("setting gm message", "success")
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                                 binary=2,
@@ -500,6 +527,7 @@ async def on_message(message):
             async with session.get('http://localhost:5001/reroll_gn_message') as resp:
                 if resp.status == 200:
                     gn_message = GoodNightMessage()
+                    gn_message_stored = gn_message
                     logger("rerolling gn_message", "success")
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                                 binary=2,
@@ -520,6 +548,7 @@ async def on_message(message):
                 if resp.status == 200:
                     new_target_time = await target_time_getter(hour=None, minute=None, second=None, bot_type=2)
                     gn_target_time = new_target_time
+                    gn_time_stored = new_target_time
                     logger("rerolling gn_time", "success")
                     embede = await create_embed(bot_type="GN bot", targetTime=new_target_time, message=gn_message,
                                                 binary=2,
@@ -540,6 +569,7 @@ async def on_message(message):
                 if resp.status == 200:
                     logger("setting gn_message", "success")
                     gn_message = message.content.lower().split("&")[1]
+                    gn_message_stored = gn_message
                     print(gn_message)
                     embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
                                                 binary=2,
@@ -565,6 +595,7 @@ async def on_message(message):
     if message.content.lower().split("&")[0] == "set gn time" and message.content.lower() != "set gn time":
         await message.delete()
         gn_time_setter = message.content.lower().split("&")[1]
+        gn_time_stored = gn_time_setter
         gn_time_set = gn_time_setter.split(":")
         gn_hour = int(gn_time_set[0])
         gn_minute = int(gn_time_set[1])
@@ -586,6 +617,7 @@ async def on_message(message):
         await message.delete()
         gm_time_setter = message.content.lower().split("&")[1]
         gm_time_set = gm_time_setter.split(":")
+        gm_time_stored = gm_time_set
         gm_hour = int(gm_time_set[0])
         gm_minute = int(gm_time_set[1])
         gm_second = int(gm_time_set[2])
@@ -617,35 +649,21 @@ async def on_disconnect():
         try:
             await bot.start(TOKEN)
             print("Reconnected to Discord")
+            rerun_if_disconnect(gm_start_date, 1, gm_time_stored)
+            rerun_if_disconnect(gn_start_date, 2, gn_time_stored)
             logger("bot_disconnect", "nvm we good")
             break
-        except Exception as e:
-            print(f"Error reconnecting to Discord: {e}")
+        except discord.ConnectionClosed:
+            print(f"Error reconnecting to Discord")
             content = {
-                "content": f"@Zw#7176 shits broken again. Error: {e}"
+                "content": f"@Zw#7176 shits broken again."
             }
             s = requests.post(
                 url="https://discord.com/api/webhooks/1098387542258233375/VjRx3is-DKkiO3z3VUkpOKhn27k8Dj1yEStUIMqfUzlDEW6f9Udbnn0uDrsNcVe9Q_cn",
                 json=content)
             print(s)
             retry_count += 1
-            await asyncio.sleep(600)
-
-
-async def try_reconnect():
-    while True:
-        print("Reconnecting...")
-        try:
-            await bot.start(TOKEN)
-            logger("trying to reconnect", "success")
-            print("Back online")
-            break
-        except:
-            await asyncio.sleep(600)
-
-
-gm_running = False
-
+        await asyncio.sleep(600)
 
 def get_seconds_until_next_time():
     current_time = datetime.now()
@@ -661,6 +679,9 @@ def get_seconds_until_next_time():
 @bot.tree.command(name="gm", description="gm bot")
 async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None):
     global gm_start_date
+    global gm_interaction
+
+    gm_interaction = interaction
 
     if gm_start_date is not None and gm_start_date.date() == datetime.now().date():  # so the code doesnt run twice
         logger("starting gm bot...", "already running for tdoay")
@@ -682,6 +703,9 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
     global gm_target_time
     global gm_message
     global gm_start_date
+    global gm_time_stored
+    global gm_message_stored
+
     channel = interaction.channel
 
     gm_running = False
@@ -700,16 +724,21 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
     gm_target_time = await target_time_getter(hour, minute, second, 1)
     logger("gm_target_time generated", f"Success! :{gm_target_time}")
 
+    gm_time_stored = gm_target_time
+
     gm_message = GoodMorningMessage()
     logger("gm_message generated", f"Success! :{gm_message}")
+
+    gm_message_stored = gm_message
+
     # Create the initial embed
     embed = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
                                bot_type2=1)
     gm_embed = await channel.send(embed=embed)
     logger("gm_bot", "Embed Sent!")
-    gn_stopper = True
+    gm_stopper = True
 
-    while gn_stopper:
+    while gm_stopper:
         current_time = datetime.now().strftime("%H:%M:%S")
         if current_time == gm_target_time:
             try:
@@ -729,6 +758,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                             await asyncio.sleep(get_seconds_until_next_time())
                             gm_running = False
                             gm_start_date = None
+                            gm_stopper = False
                             return 200
                         else:
                             logger("gm_bot", f"uh-oh spagettio")
@@ -736,6 +766,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                                                         message=gm_message, binary=2,
                                                         bot_type2=1)
                             await gm_embed.edit(embed=embede)
+                            gm_stopper = False
             except Exception as e:
                 # Update the embed with a failure message
                 logger("gm_bot", f"uh-oh spagettio")
@@ -759,14 +790,17 @@ gn_running = False
 
 @bot.tree.command(name="gn", description="gn bot")
 async def gn_bot(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None):
-    global start_date
+    global gn_start_date
     global gn_embed
+    global gn_interaction
 
-    if start_date is not None and start_date.date() == datetime.now().date():
+    gn_interaction = interaction
+
+    if gn_start_date is not None and gn_start_date.date() == datetime.now().date():
         await interaction.response.send_message(content="Already running for today")
         logger("gn_bot", "stopped due to Already Running Today")
 
-    start_date = datetime.now()
+    gn_start_date = datetime.now()
     await interaction.response.send_message(content="Running.")
     logger("gn_bot", "Running!")
     recursive = 200
@@ -777,7 +811,7 @@ async def gn_bot(interaction: discord.Interaction, hour: int = None, minute: int
 
 
 async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None):
-    global start_date
+    global gn_start_date
     global gn_running
     global gn_message
     global gn_target_time
@@ -821,7 +855,7 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
                         logger("gn_bot", "embed is now green")
                         await asyncio.sleep(get_seconds_until_next_time())
                         gn_running = False
-                        start_date = None
+                        gn_start_date = None
                         logger("gn_bot", "returning 200")
                         return 200  # Recursive call
                     else:
@@ -833,7 +867,7 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
         await asyncio.sleep(1)
     gn_running = False
 
-    start_date = None
+    gn_start_date = None
     logger("gn_bot", "returning 201")
     return 201
 
