@@ -603,39 +603,6 @@ async def on_message(message):
         await gm_embed.edit(embed=embede)
         logger("setting gm_time, embed changed", "success")
 
-
-@bot.event
-async def on_disconnect():
-    global message_queue
-    global queue_start
-    max_retries = 1000
-    retry_count = 0
-
-    print("Disconnected from Discord")
-
-    message_queue = []
-    queue_start = None
-
-    logger("bot_disconnect", "YO SHIT RAGGEDY")
-
-    while retry_count < max_retries:
-        try:
-            await bot.start(TOKEN)
-            print("Reconnected to Discord")
-            logger("bot_disconnect", "nvm we good")
-            break
-        except Exception as e:
-            print(f"Error reconnecting to Discord: {e}")
-            content = {
-                "content": f"@Zw#7176 shits broken again. Error: {e}"
-            }
-            s = requests.post(
-                url="https://discord.com/api/webhooks/1098387542258233375/VjRx3is-DKkiO3z3VUkpOKhn27k8Dj1yEStUIMqfUzlDEW6f9Udbnn0uDrsNcVe9Q_cn",
-                json=content)
-            print(s)
-            retry_count += 1
-            await asyncio.sleep(600)
-
 #####################
 
 gm_running = False
