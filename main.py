@@ -943,11 +943,17 @@ async def list_all_days(interaction: discord.Interaction, bot_type: int, page: i
 message_queue = []
 queue_start = None
 
+interactions_for_send = set()
 
 @bot.tree.command(name="send", description="sends message at given time or in 2 minutes")
 async def send_message_queue(interaction: discord.Interaction, set_message: str, set_hour: int = None,
                              set_minute: int = None, set_second: int = None, interval: int = None):
     global queue_start, send_message_time, warning_time
+
+    if interaction.id in interactions_for_send:
+        return
+
+    processed_interactions.add(interaction.id)
     message_queue.append(set_message)  # adds the message to the queue
     if queue_start is None:
         if interval is None or interval < 5:
