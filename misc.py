@@ -1,12 +1,12 @@
 import asyncio
-import tempfile
-import threading
 from datetime import datetime
+import tempfile
 import requests
 from flask import Flask, send_file
 import pyautogui
-import time
 from pynput.keyboard import Controller, Key
+from PIL import Image, ImageChops
+import time
 
 # 4/26/2023
 
@@ -85,6 +85,42 @@ def send_message():
         print(e)
         return "not success", 201
 
+@app.route('/instant_response', methods = ['GET'])
+def instant_response():
+    reference = Image.open('wechat_clear.png')
+
+    print("Waiting until 12 AM")
+
+    while True:
+        current_time = datetime.now().strftime("%H:%M:%S")
+        if current_time == "00:00:00":
+            print("Instant response started")
+            break
+        time.sleep(1)
+
+    while True:
+        current_time = datetime.now().strftime("%H:%M:%S")
+
+        if current_time == "06:00:00":
+            break
+        screenshot = pyautogui.screenshot(region=(490, 1040, 40, 40))
+        screenshot.save('test2.png')
+        reference23 = Image.open('test2.png')
+
+        diff = ImageChops.difference(reference, reference23)
+
+        if diff.getbbox() is None:
+            print("images are the same")
+
+        else:
+            print("serena responded, uh oh")
+            response = requests.get("http://localhost:5000/gm")
+            if response.status_code == 200:
+                return "image changed", 200
+            else:
+                return "oh no", 500
+
+        time.sleep(1)
 
 if __name__ == '__main__':
     app.run(host='localhost', port=42069)

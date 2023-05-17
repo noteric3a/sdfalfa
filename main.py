@@ -1,12 +1,11 @@
 import asyncio
 import calendar
 import io
+import logging
 from datetime import datetime, timedelta
 from random import randint
-import logging
 import aiohttp
 import discord
-import requests
 from discord import File
 from discord.ext import commands
 from flask import jsonify, Flask
@@ -33,7 +32,7 @@ gm_start_date = None
 gm_embed = None
 gn_embed = None
 send_message_embed = None
-TOKEN = "MTA5ODc3MTgwMDc2ODM4OTE2MA.GBizV-.2wVol9ysvXD9WI9USh-p4_cGelHOqhckx6mMOo"
+TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GX1t9O.A7PgLBttKkpaA8MQs0bV3lnavmT7SqAiwOjQyU"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
@@ -620,11 +619,11 @@ def get_seconds_until_next_time():
 
 
 @bot.tree.command(name="gm", description="gm bot")
-async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None):
+async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None, instant_response: bool = None):
     global gm_start_date
 
     if gm_start_date is not None and gm_start_date.date() == datetime.now().date():  # so the code doesnt run twice
-        logger("starting gm bot...", "already running for tdoay")
+        logger("starting gm bot...", "already running for today")
         await interaction.response.send_message(content="Already running for today")
 
     gm_start_date = datetime.now()
@@ -668,9 +667,24 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                                bot_type2=1)
     gm_embed = await channel.send(embed=embed)
     logger("gm_bot", "Embed Sent!")
-    gn_stopper = True
+    gm_stopper = True
 
-    while gn_stopper:
+    async with aiohttp.ClientSession() as session:
+        async with session.get('http://localhost:42069/instant_response') as resp:
+            if resp.status == 200:
+                print("instant response triggered")
+                gm_stopper = False
+                current_days = day(bot_type=1)
+                instant_response_time = datetime.now().strftime("%H:%M:%S")
+                makeCurrentDay(bot_type=1, days=current_days, message=gm_message, mcd_target_time=instant_response_time)
+                logger("gm_bot", "Recorded the current day!")
+                embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                            binary=3, bot_type2=1)
+                await gm_embed.edit(embed=embede)
+            else:
+                print("uh oh")
+
+    while gm_stopper:
         current_time = datetime.now().strftime("%H:%M:%S")
         if current_time == gm_target_time:
             try:
