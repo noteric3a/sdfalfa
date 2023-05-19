@@ -1,12 +1,16 @@
 import asyncio
-import threading
-import time
-from datetime import datetime
 import logging
 import pyautogui
 import requests
-from flask import Flask
+from flask import Flask, jsonify
 from pynput.keyboard import Key, Controller
+from PIL import Image, ImageChops
+import time
+from datetime import datetime
+import threading
+
+instant_response_variable = True
+instant_response_time = ""
 
 keyboard = Controller()
 
@@ -41,6 +45,54 @@ def WeChatTask(message):
 def logger(event_name, event_details):
     logging.info(f"{event_name}: {event_details}")
 
+
+def instant_response():
+    global instant_response_variable
+    global instant_response_time
+    response = requests.get('http://localhost:8080/get_gm_time')
+    stop_time = response.json().get('variable_name')
+
+    response = requests.get('http://localhost:8080/get_gm_message')
+    instant_gm_message = response.json().get('variable_name')
+
+    screenshot = pyautogui.screenshot(region=(490, 1040, 40, 40))
+    screenshot.save('old.png')
+    reference = Image.open('old.png')
+
+    print("Waiting until 4 AM")
+
+    """while True:
+        current_time = datetime.now().strftime("%H:%M:%S")
+        if current_time == "04:00:00":
+            print("Instant response started")
+            break
+        time.sleep(1)"""
+
+    while True:
+        current_time = datetime.now().strftime("%H:%M:%S")
+
+        if current_time == stop_time:  # doesnt auto respond if it is the gm target time
+            break
+
+        screenshot = pyautogui.screenshot(region=(490, 1040, 40, 40))
+        screenshot.save('new.png')
+        new_reference = Image.open('new.png')
+
+        diff = ImageChops.difference(reference, new_reference)
+
+        if diff.getbbox() is None:
+            print("images are the same")
+
+
+        else:
+            print("serena responsed uh oh")
+            instant_response_time = datetime.now().strftime("%H:%M:%S")
+            instant_response_variable = False
+            WeChatTask(instant_gm_message)
+            break
+
+        time.sleep(1)
+
 app = Flask(__name__)
 
 gm_stopper = True
@@ -54,32 +106,37 @@ def run_script():
     global gm_target_time
     global gm_message
     global run_handle_requests
+    global instant_response_variable
+    global instant_response_time
 
     # Reset stopper and handle_requests flag to True
     gm_stopper = True
     run_handle_requests = True
 
-    response = requests.get('http://localhost:8080/get_gm_time')
-    gm_target_time = response.json().get('variable_name')
+    if instant_response_variable:
+        response = requests.get('http://localhost:8080/get_gm_time')
+        gm_target_time = response.json().get('variable_name')
 
-    response = requests.get('http://localhost:8080/get_gm_message')
-    gm_message = response.json().get('variable_name')
+        response = requests.get('http://localhost:8080/get_gm_message')
+        gm_message = response.json().get('variable_name')
 
-    print("GM message: " + gm_message)
+        print("GM message: " + gm_message)
 
-    try:
-        logger("Current_time equals Target_time", "Success")
-        # does the task
-        WeChatTask(gm_message)
-        logger("Task done", "Success")
-        # sends a success message to turn the embed green
-        gm_stopper = False
-        run_handle_requests = False
-        logger("Returning 200", "Success")
-        return "script stopped", 200
-    except Exception as e:
-        print(e)
-        return "Script stopped.", 201
+        try:
+            logger("Current_time equals Target_time", "Success")
+            # does the task
+            WeChatTask(gm_message)
+            logger("Task done", "Success")
+            # sends a success message to turn the embed green
+            gm_stopper = False
+            run_handle_requests = False
+            logger("Returning 200", "Success")
+            return "script stopped", 200
+        except Exception as e:
+            print(e)
+            return "Script stopped.", 201
+
+    return f"{instant_response_time}", 205
 
 
 @app.route('/stop_gm', methods=['GET'])
@@ -102,6 +159,17 @@ def reroll_gm_time():
 @app.route('/set_gm_message', methods=['GET'])
 def set_gm_message():
     return "set", 200
+
+@app.route('/instant_response', methods = ['GET'])
+def instant_response_started():
+    thread = threading.Thread(target=instant_response)
+    thread.start()
+    return "starting", 200
+
+
+@app.route('/instant_response_time', methods = ['GET'])
+def instant_response_time_get():
+    return jsonify(variable_name=instant_response_time)
 
 
 if __name__ == '__main__':
