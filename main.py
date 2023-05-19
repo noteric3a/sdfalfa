@@ -33,7 +33,7 @@ gm_start_date = None
 gm_embed = None
 gn_embed = None
 send_message_embed = None
-TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GX1t9O.A7PgLBttKkpaA8MQs0bV3lnavmT7SqAiwOjQyU"
+TOKEN = "MTA5ODc3MTgwMDc2ODM4OTE2MA.GBizV-.2wVol9ysvXD9WI9USh-p4_cGelHOqhckx6mMOo"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
@@ -623,7 +623,7 @@ def get_seconds_until_next_time():
 async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None, instant_response: bool = None):
     global gm_start_date
 
-    if gm_start_date is not None and gm_start_date.date() == datetime.now().date():  # so the code doesnt run twice
+    if gm_start_date is not None:  # so the code doesnt run twice
         logger("starting gm bot...", "already running for today")
         await interaction.response.send_message(content="Already running for today")
 
@@ -750,7 +750,7 @@ async def gn_bot(interaction: discord.Interaction, hour: int = None, minute: int
     global start_date
     global gn_embed
 
-    if start_date is not None and start_date.date() == datetime.now().date():
+    if start_date is not None:
         await interaction.response.send_message(content="Already running for today")
         logger("gn_bot", "stopped due to Already Running Today")
 
