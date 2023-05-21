@@ -10,6 +10,7 @@ import requests
 from discord import File
 from discord.ext import commands
 from flask import jsonify, Flask
+from github import Github
 
 # 4/26/2023
 
@@ -33,7 +34,7 @@ gm_start_date = None
 gm_embed = None
 gn_embed = None
 send_message_embed = None
-TOKEN = "MTA5ODc3MTgwMDc2ODM4OTE2MA.GBizV-.2wVol9ysvXD9WI9USh-p4_cGelHOqhckx6mMOo"
+TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GX1t9O.A7PgLBttKkpaA8MQs0bV3lnavmT7SqAiwOjQyU"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
@@ -43,6 +44,40 @@ logging.basicConfig(filename='main.log', level=logging.DEBUG,
 def logger(event_name, event_details):
     logging.info(f"{event_name}: {event_details}")
 
+
+def update_github_day_file(type):
+    access_token = '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'
+    github = Github(access_token)
+
+    repo_name = 'wechatbot'
+    repo = github.get_user().get_repo(repo_name)
+
+    if type == 1:
+        file_path = 'day.txt'
+    else:
+        file_path = 'day2.txt'
+
+    file = repo.get_contents(file_path)
+
+    with open(file_path, "rb") as file_obj:
+        file_content = file_obj.read()
+
+    if type == 1:
+        repo.update_file(
+            path="day.txt",
+            message='Updating gm/gn file',
+            content=file_content,
+            sha=file.sha,
+            branch='main'
+        )
+    else:
+        repo.update_file(
+            path="day2.txt",
+            message='Updating gm/gn file',
+            content=file_content,
+            sha=file.sha,
+            branch='main'
+        )
 
 def GoodMorningMessage():
     global gmMessage
@@ -779,6 +814,9 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                 await gm_embed.edit(embed=embede)
                 print(e)
         await asyncio.sleep(1)
+
+    update_github_day_file(1)
+
     # Update the embed with the final message and set the flag to indicate that the command has finished running
     gm_running = False
 
@@ -867,6 +905,8 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
                         gn_stopper = False
         await asyncio.sleep(1)
     gn_running = False
+
+    update_github_day_file(2)
 
     start_date = None
     logger("gn_bot", "returning 201")
@@ -1159,6 +1199,9 @@ def run_flask():
 
 async def run_discord():
     await bot.start(TOKEN, reconnect=True)
+
+update_github_day_file(1)
+update_github_day_file(2)
 
 
 # Start the Flask and Discord tasks
