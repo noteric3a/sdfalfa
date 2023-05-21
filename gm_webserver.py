@@ -77,7 +77,6 @@ def instant_response():
         diff = ImageChops.difference(reference, new_reference)
 
         if diff.getbbox() is None:
-            print("gn not triggered")
             time.sleep(1)
         else:
             try:
@@ -194,6 +193,21 @@ def stop_instant_response():
     stop_instant_response_variable = False
     thread = None
     return "stopped", 200
+
+
+@app.route('/reroll_gm_message', methods=['GET'])
+def reroll_gm_message():
+    return "switched", 200
+
+
+@app.route('/reroll_gm_time', methods=['GET'])
+def reroll_gm_time():
+    return "switched", 200
+
+
+@app.route('/set_gm_message', methods=['GET'])
+def set_gm_message():
+    return "set", 200
 
 
 if __name__ == '__main__':

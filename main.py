@@ -205,7 +205,7 @@ async def target_time_getter(hour, minute, second, bot_type):
 
 
 # gets the time
-async def create_embed(bot_type, targetTime, message, binary, bot_type2):
+async def create_embed(bot_type, targetTime, message, binary, bot_type2, instant_response_time = None):
     # getting the timestamp
 
     datetime_module = datetime.now()
@@ -250,11 +250,19 @@ async def create_embed(bot_type, targetTime, message, binary, bot_type2):
         colors = discord.Color.dark_gold()  # warning color
 
     if bot_type2 == 1 or bot_type2 == 2:
-        embede = discord.Embed(
-            title=f"Time for {bot_type}",
-            description=f"Time left: <t:{timestamp}:R> \n Target Time: {targetTime} \n Message: {message}",
-            color=colors
-        )
+        if instant_response_time is not None:
+            embede = discord.Embed(
+                title=f"Time for {bot_type}",
+                description=f"Time left: <t:{timestamp}:R> \n Original Target Time: {targetTime} \n **Instant Response Time: {instant_response_time}** \n Message: {message}",
+                color=colors
+            )
+        else:
+            embede = discord.Embed(
+                title=f"Time for {bot_type}",
+                description=f"Time left: <t:{timestamp}:R> \n Target Time: {targetTime} \n Message: {message}",
+                color=colors
+            )
+
     elif bot_type2 == 3:
         queue_priority_counter = 0
         messages = ""
@@ -386,7 +394,7 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    global gm_target_time
+    global gm_target_time, cant_start_twice
     global gm_embed
     global gm_message
     global gn_target_time
@@ -604,8 +612,9 @@ async def on_message(message):
         logger("setting gm_time, embed changed", "success")
     if message.content.lower() == "stop instant response":
         await message.delete()
+        cant_start_twice = 1
         async with aiohttp.ClientSession() as session:
-            async with session.get("http://localhost:5000/stop_instant_response"):
+            async with session.get("http://localhost:5000/stop_instant_response") as resp:
                 if resp.status == 200:
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                                 binary=2,
@@ -619,19 +628,21 @@ async def on_message(message):
                     logger("stopping instant response", "success")
     if message.content.lower() == "start instant response":
         await message.delete()
-        async with aiohttp.ClientSession() as session:
-            async with session.get("http://localhost:5000/instant_response"):
-                if resp.status == 200:
-                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                binary=2,
-                                                bot_type2=1)
-                    await gm_embed.edit(embed=embede)
-                    await asyncio.sleep(0.3)
-                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                binary=1,
-                                                bot_type2=1)
-                    await gm_embed.edit(embed=embede)
-                    logger("starting instant response", "success")
+        if cant_start_twice == 1:
+            async with aiohttp.ClientSession() as session:
+                async with session.get("http://localhost:5000/instant_response") as resp:
+                    if resp.status == 200:
+                        cant_start_twice = 0
+                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                    binary=2,
+                                                    bot_type2=1, instant_response_time="Awaiting...")
+                        await gm_embed.edit(embed=embede)
+                        await asyncio.sleep(0.3)
+                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                    binary=1,
+                                                    bot_type2=1, instant_response_time="Awaiting...")
+                        await gm_embed.edit(embed=embede)
+                        logger("starting instant response", "success")
 
 #####################
 
@@ -702,9 +713,15 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
     gm_message = GoodMorningMessage()
     logger("gm_message generated", f"Success! :{gm_message}")
     # Create the initial embed
-    embed = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
-                               bot_type2=1)
-    gm_embed = await channel.send(embed=embed)
+    if instant_response is None or instant_response:
+        embed = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
+                                   bot_type2=1, instant_response_time="Awaiting...")
+        gm_embed = await channel.send(embed=embed)
+    else:
+        embed = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message, binary=1,
+                                   bot_type2=1)
+        gm_embed = await channel.send(embed=embed)
+
     logger("gm_bot", "Embed Sent!")
     gm_stopper = True
 
@@ -731,7 +748,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                             return 200
                         elif resp.status == 205:
                             response = requests.get('http://localhost:5000/instant_response_time')
-                            gm_target_time = response.json().get('variable_name')
+                            instant_response_gm_target_time = response.json().get('variable_name')
                             await channel.send(f"Instant response was triggered at {gm_target_time}")
                             logger("gm_bot", "Request Code 205!")
                             # Update the embed with a success message
@@ -741,7 +758,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                             logger("gm_bot", "Recorded the current day!")
                             embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time,
                                                         message=gm_message,
-                                                        binary=3, bot_type2=1)
+                                                        binary=3, bot_type2=1, instant_response_time=f"{instant_response_gm_target_time}")
                             await gm_embed.edit(embed=embede)
                             logger("gm_bot", "Embed is now green")
                             await asyncio.sleep(get_seconds_until_next_time())
