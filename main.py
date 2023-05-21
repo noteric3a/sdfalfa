@@ -602,6 +602,36 @@ async def on_message(message):
                                     bot_type2=1)
         await gm_embed.edit(embed=embede)
         logger("setting gm_time, embed changed", "success")
+    if message.content.lower() == "stop instant response":
+        await message.delete()
+        async with aiohttp.ClientSession() as session:
+            async with session.get("http://localhost:5000/stop_instant_response"):
+                if resp.status == 200:
+                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                binary=2,
+                                                bot_type2=1)
+                    await gm_embed.edit(embed=embede)
+                    await asyncio.sleep(0.3)
+                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                binary=1,
+                                                bot_type2=1)
+                    await gm_embed.edit(embed=embede)
+                    logger("stopping instant response", "success")
+    if message.content.lower() == "start instant response":
+        await message.delete()
+        async with aiohttp.ClientSession() as session:
+            async with session.get("http://localhost:5000/instant_response"):
+                if resp.status == 200:
+                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                binary=2,
+                                                bot_type2=1)
+                    await gm_embed.edit(embed=embede)
+                    await asyncio.sleep(0.3)
+                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                binary=1,
+                                                bot_type2=1)
+                    await gm_embed.edit(embed=embede)
+                    logger("starting instant response", "success")
 
 #####################
 

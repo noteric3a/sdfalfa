@@ -10,6 +10,7 @@ from datetime import datetime
 import threading
 
 instant_response_variable = True
+stop_instant_response_variable = True
 instant_response_time = ""
 
 keyboard = Controller()
@@ -47,8 +48,10 @@ def logger(event_name, event_details):
 
 
 def instant_response():
+    global thread
     global instant_response_variable
     global instant_response_time
+    global stop_instant_response_variable
     response = requests.get('http://localhost:8080/get_gm_time')
     stop_time = response.json().get('variable_name')
 
@@ -61,14 +64,37 @@ def instant_response():
 
     print("Waiting until 4 AM")
 
-    """while True:
+    while stop_instant_response_variable:
         current_time = datetime.now().strftime("%H:%M:%S")
-        if current_time == "04:00:00":
+        if current_time == "04:00:00":  # instant response starts at 4 AM
             print("Instant response started")
             break
-        time.sleep(1)"""
 
-    while True:
+        screenshot = pyautogui.screenshot(region=(490, 1040, 40, 40))
+        screenshot.save('new.png')
+        new_reference = Image.open('new.png')
+
+        diff = ImageChops.difference(reference, new_reference)
+
+        if diff.getbbox() is None:
+            print("gn not triggered")
+            time.sleep(1)
+        else:
+            try:
+                pyautogui.click(500, 1060)
+
+                # clicks on WeChat
+
+                pyautogui.click(2, 2)
+
+                time.sleep(1)
+
+                # Clicks off WeChat
+            except Exception:
+                pass
+
+
+    while stop_instant_response_variable:
         current_time = datetime.now().strftime("%H:%M:%S")
 
         if current_time == stop_time:  # doesnt auto respond if it is the gm target time
@@ -92,6 +118,10 @@ def instant_response():
             break
 
         time.sleep(1)
+
+    print("done")
+    stop_instant_response_variable = True
+    thread = None
 
 app = Flask(__name__)
 
@@ -145,23 +175,9 @@ def stop_gm():
     gm_stopper = False
     return "", 200
 
-
-@app.route('/reroll_gm_message', methods=['GET'])
-def reroll_gm_message():
-    return "switched", 200
-
-
-@app.route('/reroll_gm_time', methods=['GET'])
-def reroll_gm_time():
-    return "switched", 200
-
-
-@app.route('/set_gm_message', methods=['GET'])
-def set_gm_message():
-    return "set", 200
-
 @app.route('/instant_response', methods = ['GET'])
 def instant_response_started():
+    global thread
     thread = threading.Thread(target=instant_response)
     thread.start()
     return "starting", 200
@@ -170,6 +186,14 @@ def instant_response_started():
 @app.route('/instant_response_time', methods = ['GET'])
 def instant_response_time_get():
     return jsonify(variable_name=instant_response_time)
+
+@app.route('/stop_instant_response', methods = ['GET'])
+def stop_instant_response():
+    global stop_instant_response_variable
+    global thread
+    stop_instant_response_variable = False
+    thread = None
+    return "stopped", 200
 
 
 if __name__ == '__main__':
