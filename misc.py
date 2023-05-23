@@ -16,13 +16,23 @@ keyboard = Controller()
 
 @app.route('/screenshot', methods=['GET'])
 def screenshot():
-    pyautogui.click(510, 1060)
+    try:
+        pyautogui.click(510, 1060)
 
-    # goes to WeChat and clicks it
+        # goes to WeChat and clicks it
 
-    pyautogui.click(700, 280)
+        pyautogui.click(700, 280)
 
-    # get the app window and height
+        # get the app window and height
+    except pyautogui.FailSafeException:
+        pyautogui.moveTo(500,500)
+        pyautogui.click(510, 1060)
+
+        # goes to WeChat and clicks it
+
+        pyautogui.click(700, 280)
+
+        # get the app window and height
 
     wechat = pyautogui.getWindowsWithTitle('WeChat')[0]
     left, top, width, height = wechat.left, wechat.top, wechat.width, wechat.height
@@ -32,7 +42,7 @@ def screenshot():
         screenshot.save(f.name)
         filename = f.name
 
-    pyautogui.click(2, 2)
+    pyautogui.click(100, 100)
 
     # clicks off
 
@@ -67,7 +77,7 @@ def send_message():
 
         # sends the message
 
-        pyautogui.click(2, 2)
+        pyautogui.click(100,100)
 
         # clicks off
 
