@@ -53,8 +53,7 @@ def instant_response():
     global instant_response_time
     global stop_instant_response_variable
 
-    response = requests.get('http://localhost:8080/get_gm_message')
-    instant_gm_message = response.json().get('variable_name')
+    stop_instant_response_variable = True
 
     try:
         screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
@@ -70,6 +69,7 @@ def instant_response():
 
     while stop_instant_response_variable:
         current_time = datetime.now().strftime("%H:%M:%S")
+        print(current_time)
         if current_time == "04:00:00":  # instant response starts at 4 AM
             print("Instant response started")
             break
@@ -87,16 +87,17 @@ def instant_response():
         diff = ImageChops.difference(reference, new_reference)
 
         if diff.getbbox() is None:
-            time.sleep(1)
+            time.sleep(0.5)
         else:
             try:
-                time.sleep(1)
 
                 pyautogui.click(510, 1060)
 
                 # clicks on WeChat
 
-                pyautogui.click(2, 2)
+                time.sleep(2)
+
+                pyautogui.click(100,100)
 
                 # Clicks off WeChat
             except Exception:
@@ -122,6 +123,8 @@ def instant_response():
 
 
         else:
+            response = requests.get('http://localhost:8080/get_gm_message')
+            instant_gm_message = response.json().get('variable_name')
             print("serena responsed uh oh")
             instant_response_time = datetime.now().strftime("%H:%M:%S")
             instant_response_variable = False
