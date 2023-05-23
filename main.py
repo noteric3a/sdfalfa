@@ -28,13 +28,16 @@ gm_second = None
 message_stopper = True
 gm_stop_num = 0
 gn_stop_num = 0
+cant_start_twice = True
 warning_time_checker = True
 start_date = None
 gm_start_date = None
 gm_embed = None
 gn_embed = None
 send_message_embed = None
-TOKEN = "MTA5ODc3MTgwMDc2ODM4OTE2MA.GBizV-.2wVol9ysvXD9WI9USh-p4_cGelHOqhckx6mMOo"
+gm_channel = None
+gn_channel = None
+TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GX1t9O.A7PgLBttKkpaA8MQs0bV3lnavmT7SqAiwOjQyU"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
@@ -449,11 +452,15 @@ async def on_message(message):
             async with session.get('http://localhost:5000/stop_gm') as resp:
                 if resp.status == 200:
                     gm_stop_num = 1
-
                     logger("stop_gm", "success")
-                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                binary=2,
-                                                bot_type2=1)
+                    if cant_start_twice:
+                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                    binary=2,
+                                                    bot_type2=1, instant_response_time="Awaiting...")
+                    else:
+                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                    binary=2,
+                                                    bot_type2=1)
                     await gm_embed.edit(embed=embede)
                     logger("stop_gm, embed changed", "success")
                     pass
@@ -470,15 +477,26 @@ async def on_message(message):
 
                     logger("rerolling gm message", "success")
 
-                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                binary=2,
-                                                bot_type2=1)
-                    await gm_embed.edit(embed=embede)
-                    await asyncio.sleep(0.3)
-                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                binary=1,
-                                                bot_type2=1)
-                    await gm_embed.edit(embed=embede)
+                    if cant_start_twice:
+                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                    binary=2,
+                                                    bot_type2=1, instant_response_time="Awaiting...")
+                        await gm_embed.edit(embed=embede)
+                        await asyncio.sleep(0.3)
+                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                    binary=1,
+                                                    bot_type2=1, instant_response_time="Awaiting...")
+                        await gm_embed.edit(embed=embede)
+                    else:
+                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                    binary=2,
+                                                    bot_type2=1)
+                        await gm_embed.edit(embed=embede)
+                        await asyncio.sleep(0.3)
+                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                    binary=1,
+                                                    bot_type2=1)
+                        await gm_embed.edit(embed=embede)
 
                     logger("rerolling gm message, embed changed", "success")
                 else:
@@ -490,15 +508,26 @@ async def on_message(message):
                 if resp.status == 200:
                     new_target_time = await target_time_getter(hour=None, minute=None, second=None, bot_type=1)
                     gm_target_time = new_target_time
-                    logger("rerolling gm time", "success")
-                    embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
-                                                binary=2,
-                                                bot_type2=1)
-                    await gm_embed.edit(embed=embede)
-                    await asyncio.sleep(0.3)
-                    embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
-                                                binary=1,
-                                                bot_type2=1)
+                    if cant_start_twice:
+                        logger("rerolling gm time", "success")
+                        embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
+                                                    binary=2,
+                                                    bot_type2=1, instant_response_time="Awaiting...")
+                        await gm_embed.edit(embed=embede)
+                        await asyncio.sleep(0.3)
+                        embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
+                                                    binary=1,
+                                                    bot_type2=1, instant_response_time="Awaiting...")
+                    else:
+                        logger("rerolling gm time", "success")
+                        embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
+                                                    binary=2,
+                                                    bot_type2=1)
+                        await gm_embed.edit(embed=embede)
+                        await asyncio.sleep(0.3)
+                        embede = await create_embed(bot_type="GM bot", targetTime=new_target_time, message=gm_message,
+                                                    binary=1,
+                                                    bot_type2=1)
                     await gm_embed.edit(embed=embede)
                     logger("rerolling gm time, embed changed", "success")
                 else:
@@ -510,15 +539,26 @@ async def on_message(message):
                 if resp.status == 200:
                     gm_message = message.content.lower().split("&")[1]
                     logger("setting gm message", "success")
-                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                binary=2,
-                                                bot_type2=1)
-                    await gm_embed.edit(embed=embede)
-                    await asyncio.sleep(0.3)
-                    embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                                binary=1,
-                                                bot_type2=1)
-                    await gm_embed.edit(embed=embede)
+                    if cant_start_twice:
+                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                    binary=2,
+                                                    bot_type2=1, instant_response_time="Awaiting...")
+                        await gm_embed.edit(embed=embede)
+                        await asyncio.sleep(0.3)
+                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                    binary=1,
+                                                    bot_type2=1, instant_response_time="Awaiting...")
+                        await gm_embed.edit(embed=embede)
+                    else:
+                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                    binary=2,
+                                                    bot_type2=1)
+                        await gm_embed.edit(embed=embede)
+                        await asyncio.sleep(0.3)
+                        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                                    binary=1,
+                                                    bot_type2=1)
+                        await gm_embed.edit(embed=embede)
                     logger("setting gm message, embed changed", "success")
                 else:
                     await message.channel.send("Couldnt set GM message.")
@@ -635,19 +675,31 @@ async def on_message(message):
         logger("setting gm_time", "success")
         gm_target_time = await target_time_getter(hour=gm_hour, minute=gm_minute, second=gm_second,
                                                   bot_type=2)
-        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                    binary=2,
-                                    bot_type2=1)
-        await gm_embed.edit(embed=embede)
-        await asyncio.sleep(0.3)
-        embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
-                                    binary=1,
-                                    bot_type2=1)
+        if cant_start_twice:
+            embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                        binary=2,
+                                        bot_type2=1, instant_response_time="Awaiting...")
+            await gm_embed.edit(embed=embede)
+            await asyncio.sleep(0.3)
+            embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                        binary=1,
+                                        bot_type2=1, instant_response_time="Awaiting...")
+            await gm_embed.edit(embed=embede)
+        else:
+            embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                        binary=2,
+                                        bot_type2=1)
+            await gm_embed.edit(embed=embede)
+            await asyncio.sleep(0.3)
+            embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
+                                        binary=1,
+                                        bot_type2=1)
+            await gm_embed.edit(embed=embede)
         await gm_embed.edit(embed=embede)
         logger("setting gm_time, embed changed", "success")
     if message.content.lower() == "stop instant response":
         await message.delete()
-        cant_start_twice = 1
+        cant_start_twice = False
         async with aiohttp.ClientSession() as session:
             async with session.get("http://localhost:5000/stop_instant_response") as resp:
                 if resp.status == 200:
@@ -663,11 +715,11 @@ async def on_message(message):
                     logger("stopping instant response", "success")
     if message.content.lower() == "start instant response":
         await message.delete()
-        if cant_start_twice == 1:
+        if not cant_start_twice:
             async with aiohttp.ClientSession() as session:
                 async with session.get("http://localhost:5000/instant_response") as resp:
                     if resp.status == 200:
-                        cant_start_twice = 0
+                        cant_start_twice = True
                         embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                                     binary=2,
                                                     bot_type2=1, instant_response_time="Awaiting...")
