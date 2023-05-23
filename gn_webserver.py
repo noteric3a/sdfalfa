@@ -18,12 +18,10 @@ def logger(event_name, event_details):
     logging.info(f"{event_name}: {event_details}")
 def WeChatTask(message):
     print(pyautogui.size())
-    pyautogui.moveTo(500, 1060, duration=0)
-    pyautogui.click(500, 1060)
+    pyautogui.click(510, 1060)
 
     # goes to WeChat and clicks it
-
-    pyautogui.moveTo(700, 280, duration=0.5)  # serena is 600, 280. test is 600, 350
+    # serena is 600, 280. test is 600, 350
     pyautogui.click(700, 280)
 
     # goes to serena's profile
@@ -37,7 +35,6 @@ def WeChatTask(message):
 
     # sends the message
 
-    pyautogui.moveTo(2, 2)
     pyautogui.click(2, 2)
 
     # clicks off

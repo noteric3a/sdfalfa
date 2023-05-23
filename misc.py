@@ -16,12 +16,10 @@ keyboard = Controller()
 
 @app.route('/screenshot', methods=['GET'])
 def screenshot():
-    pyautogui.moveTo(500, 1060, duration=0)
-    pyautogui.click(500, 1060)
+    pyautogui.click(510, 1060)
 
     # goes to WeChat and clicks it
 
-    pyautogui.moveTo(700, 280, duration=0)  # serena is 670, 280. test is 600, 350
     pyautogui.click(700, 280)
 
     # get the app window and height
@@ -34,7 +32,6 @@ def screenshot():
         screenshot.save(f.name)
         filename = f.name
 
-    pyautogui.moveTo(2, 2)
     pyautogui.click(2, 2)
 
     # clicks off
@@ -53,12 +50,10 @@ def send_message():
     set_message = response.json().get('variable_name')
 
     try:
-        pyautogui.moveTo(500, 1060, duration=0)
         pyautogui.click(500, 1060)
 
         # goes to WeChat and clicks it
-
-        pyautogui.moveTo(700, 280, duration=0)  # serena is 670, 280. test is 600, 350
+        # serena is 670, 280. test is 600, 350
         pyautogui.click(700, 280)
 
         # goes to serena's profile
@@ -72,7 +67,6 @@ def send_message():
 
         # sends the message
 
-        pyautogui.moveTo(2, 2)
         pyautogui.click(2, 2)
 
         # clicks off

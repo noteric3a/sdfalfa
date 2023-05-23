@@ -19,8 +19,8 @@ logging.basicConfig(filename='gm.log', level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 def WeChatTask(message):
     print(pyautogui.size())
-    pyautogui.moveTo(500, 1060, duration=0)
-    pyautogui.click(500, 1060)
+    pyautogui.moveTo(510, 1060, duration=0)
+    pyautogui.click(510, 1060)
 
     # goes to WeChat and clicks it
 
@@ -52,15 +52,19 @@ def instant_response():
     global instant_response_variable
     global instant_response_time
     global stop_instant_response_variable
-    response = requests.get('http://localhost:8080/get_gm_time')
-    stop_time = response.json().get('variable_name')
 
     response = requests.get('http://localhost:8080/get_gm_message')
     instant_gm_message = response.json().get('variable_name')
 
-    screenshot = pyautogui.screenshot(region=(490, 1040, 40, 40))
-    screenshot.save('old.png')
-    reference = Image.open('old.png')
+    try:
+        screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
+        screenshot.save('old.png')
+        reference = Image.open('old.png')
+    except Exception:
+        pyautogui.moveTo(200, 200, duration=1)
+        screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
+        screenshot.save('old.png')
+        reference = Image.open('old.png')
 
     print("Waiting until 4 AM")
 
@@ -70,9 +74,15 @@ def instant_response():
             print("Instant response started")
             break
 
-        screenshot = pyautogui.screenshot(region=(490, 1040, 40, 40))
-        screenshot.save('new.png')
-        new_reference = Image.open('new.png')
+        try:
+            screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
+            screenshot.save('new.png')
+            new_reference = Image.open('new.png')
+        except Exception:
+            pyautogui.moveTo(200,200, duration = 1)
+            screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
+            screenshot.save('new.png')
+            new_reference = Image.open('new.png')
 
         diff = ImageChops.difference(reference, new_reference)
 
@@ -80,18 +90,20 @@ def instant_response():
             time.sleep(1)
         else:
             try:
-                pyautogui.click(500, 1060)
+                time.sleep(1)
+
+                pyautogui.click(510, 1060)
 
                 # clicks on WeChat
 
                 pyautogui.click(2, 2)
 
-                time.sleep(1)
-
                 # Clicks off WeChat
             except Exception:
                 pass
 
+    response = requests.get('http://localhost:8080/get_gm_time')
+    stop_time = response.json().get('variable_name')
 
     while stop_instant_response_variable:
         current_time = datetime.now().strftime("%H:%M:%S")
@@ -99,7 +111,7 @@ def instant_response():
         if current_time == stop_time:  # doesnt auto respond if it is the gm target time
             break
 
-        screenshot = pyautogui.screenshot(region=(490, 1040, 40, 40))
+        screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
         screenshot.save('new.png')
         new_reference = Image.open('new.png')
 
@@ -193,6 +205,21 @@ def stop_instant_response():
     stop_instant_response_variable = False
     thread = None
     return "stopped", 200
+
+
+@app.route('/reroll_gm_message', methods=['GET'])
+def reroll_gm_message():
+    return "switched", 200
+
+
+@app.route('/reroll_gm_time', methods=['GET'])
+def reroll_gm_time():
+    return "switched", 200
+
+
+@app.route('/set_gm_message', methods=['GET'])
+def set_gm_message():
+    return "set", 200
 
 
 if __name__ == '__main__':
