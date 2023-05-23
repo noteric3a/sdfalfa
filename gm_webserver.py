@@ -195,20 +195,5 @@ def stop_instant_response():
     return "stopped", 200
 
 
-@app.route('/reroll_gm_message', methods=['GET'])
-def reroll_gm_message():
-    return "switched", 200
-
-
-@app.route('/reroll_gm_time', methods=['GET'])
-def reroll_gm_time():
-    return "switched", 200
-
-
-@app.route('/set_gm_message', methods=['GET'])
-def set_gm_message():
-    return "set", 200
-
-
 if __name__ == '__main__':
     app.run(host='localhost', port=5000)
