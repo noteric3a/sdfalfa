@@ -9,6 +9,8 @@ import time
 from datetime import datetime
 import threading
 
+pyautogui.FAILSAFE = False
+
 instant_response_variable = True
 stop_instant_response_variable = True
 instant_response_time = ""
@@ -24,8 +26,8 @@ def WeChatTask(message):
 
     # goes to WeChat and clicks it
 
-    pyautogui.moveTo(700, 280, duration=0.5)  # serena is 600, 280. test is 600, 350
-    pyautogui.click(700, 280)
+    #    pyautogui.moveTo(700, 280, duration=0.5)  # serena is 600, 280. test is 600, 350
+    #    pyautogui.click(700, 280)
 
     # goes to serena's profile
 
@@ -38,8 +40,8 @@ def WeChatTask(message):
 
     # sends the message
 
-    pyautogui.moveTo(2, 2)
-    pyautogui.click(2, 2)
+    pyautogui.moveTo(100, 100)
+    pyautogui.click(100, 100)
 
     # clicks off
 
@@ -69,7 +71,6 @@ def instant_response():
 
     while stop_instant_response_variable:
         current_time = datetime.now().strftime("%H:%M:%S")
-        print(current_time)
         if current_time == "04:00:00":  # instant response starts at 4 AM
             print("Instant response started")
             break
@@ -87,9 +88,10 @@ def instant_response():
         diff = ImageChops.difference(reference, new_reference)
 
         if diff.getbbox() is None:
-            time.sleep(0.5)
+            time.sleep(1)
         else:
             try:
+                time.sleep(1)
 
                 pyautogui.click(510, 1060)
 
@@ -120,7 +122,6 @@ def instant_response():
 
         if diff.getbbox() is None:
             print("images are the same")
-
 
         else:
             response = requests.get('http://localhost:8080/get_gm_message')

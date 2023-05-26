@@ -22,7 +22,7 @@ def WeChatTask(message):
 
     # goes to WeChat and clicks it
     # serena is 600, 280. test is 600, 350
-    pyautogui.click(700, 280)
+    # pyautogui.click(700, 280)
 
     # goes to serena's profile
 

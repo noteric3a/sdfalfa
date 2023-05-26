@@ -5,6 +5,7 @@ from flask import Flask, send_file
 import pyautogui
 from pynput.keyboard import Controller, Key
 
+pyautogui.FAILSAFE = False
 
 # 4/26/2023
 
@@ -16,23 +17,11 @@ keyboard = Controller()
 
 @app.route('/screenshot', methods=['GET'])
 def screenshot():
-    try:
-        pyautogui.click(510, 1060)
+    pyautogui.click(510, 1060)
 
-        # goes to WeChat and clicks it
+    # goes to WeChat and clicks it
 
-        pyautogui.click(700, 280)
-
-        # get the app window and height
-    except pyautogui.FailSafeException:
-        pyautogui.moveTo(500,500)
-        pyautogui.click(510, 1060)
-
-        # goes to WeChat and clicks it
-
-        pyautogui.click(700, 280)
-
-        # get the app window and height
+    # get the app window and height
 
     wechat = pyautogui.getWindowsWithTitle('WeChat')[0]
     left, top, width, height = wechat.left, wechat.top, wechat.width, wechat.height
@@ -64,7 +53,7 @@ def send_message():
 
         # goes to WeChat and clicks it
         # serena is 670, 280. test is 600, 350
-        pyautogui.click(700, 280)
+        # pyautogui.click(700, 280)
 
         # goes to serena's profile
 
@@ -77,7 +66,7 @@ def send_message():
 
         # sends the message
 
-        pyautogui.click(100,100)
+        pyautogui.click(100, 100)
 
         # clicks off
 
