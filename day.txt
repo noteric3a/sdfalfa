@@ -60,9 +60,8 @@
 60 - Gm serena | Date and Time: 23/05/2023 07:07:06
 61 - Serena hows life | Date and Time: 24/05/2023 06:59:02 (uh oh ignored)
 62 - Good morning | Date and Time: 25/05/2023 07:00:53
-63 - Hiya | Date and Time: 26/05/2023 07:07:54
-64 - Gm serena | Date and Time: 27/05/2023 06:14:45
-65 - hey gm | Date and Time: 28/05/2023 06:21:08
-66 - Gm serena | Date and Time: 29/05/2023 10:20:29
-67 - wakey wakey | Date and Time: 30/05/2023 04:30:24
-68 - good morning | Date and Time: 31/05/2023 08:47:23
+63 - Serena hows life | Date and Time: 31/05/2023 16:09:10
+64 - Gm serena | Date and Time: 31/05/2023 16:21:30
+65 - hey gm | Date and Time: 31/05/2023 16:26:00
+66 - aneres iH | Date and Time: 31/05/2023 16:28:45
+67 - hey gm | Date and Time: 31/05/2023 16:34:10
