@@ -21,7 +21,6 @@ logging.basicConfig(filename='gm.log', level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 def WeChatTask(message):
     print(pyautogui.size())
-    pyautogui.moveTo(510, 1060, duration=0)
     pyautogui.click(510, 1060)
 
     # goes to WeChat and clicks it
@@ -58,6 +57,9 @@ def instant_response():
     stop_instant_response_variable = True
 
     try:
+        pyautogui.click(510, 1060)
+        time.sleep(1)
+        pyautogui.click(100,100)
         screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
         screenshot.save('old.png')
         reference = Image.open('old.png')
@@ -66,6 +68,15 @@ def instant_response():
         screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
         screenshot.save('old.png')
         reference = Image.open('old.png')
+
+    print("Waiting for GN to finish")
+
+    while stop_instant_response_variable:
+        current_time = datetime.now().strftime("%H:%M:%S")
+        if current_time == "00:00:00":
+            break
+
+        time.sleep(1)
 
     print("Waiting until 4 AM")
 

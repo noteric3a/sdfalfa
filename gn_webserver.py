@@ -11,6 +11,8 @@ import threading
 
 keyboard = Controller()
 
+pyautogui.FAILSAFE = False
+
 logging.basicConfig(filename='gn.log', level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
 
@@ -35,7 +37,7 @@ def WeChatTask(message):
 
     # sends the message
 
-    pyautogui.click(2, 2)
+    pyautogui.click(100, 100)
 
     # clicks off
 
