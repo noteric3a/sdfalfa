@@ -6,10 +6,8 @@ from flask import Flask, jsonify
 from pynput.keyboard import Key, Controller
 from PIL import Image, ImageChops
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 import threading
-
-pyautogui.FAILSAFE = False
 
 instant_response_variable = True
 stop_instant_response_variable = True
@@ -29,6 +27,7 @@ def WeChatTask(message):
     #    pyautogui.click(700, 280)
 
     # goes to serena's profile
+    time.sleep(0.2)
 
     pyautogui.typewrite(message)
 
@@ -117,12 +116,21 @@ def instant_response():
                 pass
 
     response = requests.get('http://localhost:8080/get_gm_time')
-    stop_time = response.json().get('variable_name')
+    stop_timer = response.json().get('variable_name')
+
+    current_time = datetime.now().strftime("%Y-%m-%d")
+    date_s = current_time.split()
+    numbs = stop_timer.split(":")
+    numbes = datetime(year=int(date_s[0]), month=int(date_s[1]),day= int(date_s[2]), hour=(numbs[0]), minute=int(numbs[1]), second=int(numbs[2]))
+    wtf = timedelta(seconds=5)
+    stop_time = numbes - wtf
+
 
     while stop_instant_response_variable:
         current_time = datetime.now().strftime("%H:%M:%S")
 
         if current_time == stop_time:  # doesnt auto respond if it is the gm target time
+            stop_instant_response_variable = False
             break
 
         screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
