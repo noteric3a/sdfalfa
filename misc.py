@@ -1,5 +1,6 @@
 import asyncio
 import tempfile
+import time
 import requests
 from flask import Flask, send_file
 import pyautogui
@@ -56,6 +57,8 @@ def send_message():
         # pyautogui.click(700, 280)
 
         # goes to serena's profile
+
+        time.sleep(0.2)
 
         pyautogui.typewrite(set_message)
 

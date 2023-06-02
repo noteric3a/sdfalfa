@@ -10,11 +10,15 @@ import requests
 from discord import File
 from discord.ext import commands
 from flask import jsonify, Flask
+from flask_caching import Cache
 from github import Github
 
 # 4/26/2023
 
 app = Flask(__name__)
+
+cache = Cache(app)
+cache.clear()
 
 gn_target_time = ""
 send_message_time = ""
@@ -81,6 +85,13 @@ def update_github_day_file(type):
             sha=file.sha,
             branch='main'
         )
+
+
+def cache_clearer():
+    cache.clear()
+
+
+# clears the cache
 
 def GoodMorningMessage():
     global gmMessage
@@ -759,6 +770,7 @@ async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int
     await interaction.response.send_message(content="Running.")
     recursive = 200
     while recursive == 200:
+        cache_clearer()
         logger("starting gm bot...", "Running!")
         recursive = await gm(interaction, hour, minute, second, instant_response)
         logger("starting gm bot...", "Finished!")
@@ -1114,6 +1126,7 @@ async def message_queue_function(target_time, warning_time, interval, interactio
     global send_message_embed
     global queue_start
     global message_stopper
+    global sending_message
     channel = interaction.channel
     if queue_type == 1:
         embed = await create_embed(bot_type="Send Message", targetTime=target_time, message=set_message,
@@ -1125,6 +1138,7 @@ async def message_queue_function(target_time, warning_time, interval, interactio
             if current_time == target_time:
                 interval_stopper = 0
                 for message in message_queue:  # runs until queue is empty
+                    sending_message = message
                     interval_stopper += 1
                     embed = await create_embed(bot_type="Send Message", targetTime=target_time,
                                                             message=set_message,
