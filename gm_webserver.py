@@ -119,7 +119,7 @@ def instant_response():
     stop_timer = response.json().get('variable_name')
 
     current_time = datetime.now().strftime("%Y-%m-%d")
-    date_s = current_time.split()
+    date_s = current_time.split("-")
     numbs = stop_timer.split(":")
     numbes = datetime(year=int(date_s[0]), month=int(date_s[1]),day= int(date_s[2]), hour=(numbs[0]), minute=int(numbs[1]), second=int(numbs[2]))
     wtf = timedelta(seconds=5)
