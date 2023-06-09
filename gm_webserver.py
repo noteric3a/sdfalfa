@@ -119,18 +119,21 @@ def instant_response():
     stop_timer = response.json().get('variable_name')
 
     current_time = datetime.now().strftime("%Y-%m-%d")
-    date_s = current_time.split("-")
-    numbs = stop_timer.split(":")
-    numbes = datetime(year=int(date_s[0]), month=int(date_s[1]),day= int(date_s[2]), hour=(numbs[0]), minute=int(numbs[1]), second=int(numbs[2]))
+    date_s = [int(num) for num in current_time.split("-")]
+    numbs = [int(num) for num in stop_timer.split(":")]
+    numbes = datetime(year=date_s[0], month=date_s[1], day=date_s[2], hour=numbs[0], minute=numbs[1], second=numbs[2])
     wtf = timedelta(seconds=5)
-    stop_time = numbes - wtf
+    stop_time2 = numbes - wtf
+    stop_time = stop_time2.strftime("%H:%M:%S")
 
+    print(f"5 seconds before gm target time: {stop_time}")
 
     while stop_instant_response_variable:
         current_time = datetime.now().strftime("%H:%M:%S")
 
         if current_time == stop_time:  # doesnt auto respond if it is the gm target time
             stop_instant_response_variable = False
+            print("Instant response not triggered.")
             break
 
         screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
@@ -140,7 +143,7 @@ def instant_response():
         diff = ImageChops.difference(reference, new_reference)
 
         if diff.getbbox() is None:
-            print("images are the same")
+            pass
 
         else:
             response = requests.get('http://localhost:8080/get_gm_message')

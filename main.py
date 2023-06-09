@@ -41,7 +41,7 @@ gn_embed = None
 send_message_embed = None
 gm_channel = None
 gn_channel = None
-TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GX1t9O.A7PgLBttKkpaA8MQs0bV3lnavmT7SqAiwOjQyU"
+TOKEN = "MTA5ODc3MTgwMDc2ODM4OTE2MA.GBizV-.2wVol9ysvXD9WI9USh-p4_cGelHOqhckx6mMOo"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
@@ -95,12 +95,12 @@ def cache_clearer():
 
 def GoodMorningMessage():
     global gmMessage
-    GenericListOfGoodMorning = ['Hi', 'Serena hows life', 'How\'s life', 'How\'s life serena', 'Hiya', 'Oi', 'Boop',
+    GenericListOfGoodMorning = ['Hi', 'Hiya', 'Oi', 'Boop',
                                 'hey gm', 'Good morning', 'Good morning serena', 'Gm serena', 'whats up serena',
                                 'Hi serena', 'wakey wakey', 'aneres iH']
     HigherTierGoodMorning = ['I hate history', 'good morning my favorite NPC', 'lets play chess, pawn to e4',
                              'top of the mornin to ya', 'I hate titration', 'Wakey wakey', 'I didn\'t do my kumon',
-                             'ily', 'Why am i up this early', 'I cant sleep', 'bro edward is up playing piano',
+                             'Why am i up this early', 'I cant sleep', 'bro edward is up playing piano',
                              'Zhao shang hao zhong guo, xian zai wo you bing qi lin', 'Zw sucks', 'how ya doin',
                              'English sucks', 'How J level of kumon', 'dinner > tony', 'You should download minecraft',
                              'I just hate Zw', 'what if drake was a bowl of assorted fruits', 'rhehehehehe',
@@ -769,12 +769,18 @@ async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int
 
     gm_running = True
 
+    clear_time = 0
+
     await interaction.response.send_message(content="GM bot running.")
     recursive = 200
     while recursive == 200:
         cache_clearer()
         logger("starting gm bot...", "Running!")
-        recursive = await gm(interaction, hour, minute, second, instant_response)
+        if clear_time == 0:
+            recursive = await gm(interaction, hour, minute, second, instant_response)
+            clear_time += 1
+        else:
+            recursive = await gm(interaction, hour=None, minute=None, second=None, instant_response=instant_response)
         logger("starting gm bot...", "Finished!")
 
 

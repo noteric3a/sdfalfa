@@ -1,13 +1,9 @@
 import logging
-
 from flask import Flask
-from datetime import datetime
 import pyautogui
-import time
 from pynput.keyboard import Key, Controller
 import requests
 import asyncio
-import threading
 
 keyboard = Controller()
 
