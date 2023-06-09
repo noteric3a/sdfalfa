@@ -41,7 +41,7 @@ gn_embed = None
 send_message_embed = None
 gm_channel = None
 gn_channel = None
-TOKEN = "MTA5ODc3MTgwMDc2ODM4OTE2MA.GBizV-.2wVol9ysvXD9WI9USh-p4_cGelHOqhckx6mMOo"
+TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GX1t9O.A7PgLBttKkpaA8MQs0bV3lnavmT7SqAiwOjQyU"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
@@ -835,7 +835,6 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                             await gm_embed.edit(embed=embede)
                             logger("gm_bot", "Embed is now green")
                             await asyncio.sleep(get_seconds_until_next_time())
-                            gm_running = False
                             return 200
                         elif resp.status == 205:
                             response = requests.get('http://localhost:5000/instant_response_time')
@@ -853,7 +852,6 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                             await gm_embed.edit(embed=embede)
                             logger("gm_bot", "Embed is now green")
                             await asyncio.sleep(get_seconds_until_next_time())
-                            gm_running = False
                             return 200
                         else:
                             logger("gm_bot", f"uh-oh spagettio")
@@ -939,7 +937,6 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
                         await gn_embed.edit(embed=embed)
                         logger("gn_bot", "embed is now green")
                         await asyncio.sleep(get_seconds_until_next_time())
-                        gn_running = False
                         logger("gn_bot", "returning 200")
                         return 200  # Recursive call
                     else:
