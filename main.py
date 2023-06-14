@@ -1233,6 +1233,11 @@ def get_auto_hi():
     global gm_auto_hi
     return jsonify(variable_name=gm_auto_hi)
 
+@app.route('/toggle_auto_hi', methods=['GET'])
+def auto_hi_toggled():
+    global gm_auto_hi
+    gm_auto_hi = False
+    return 200
 
 loop = asyncio.get_event_loop()
 

@@ -13,6 +13,7 @@ instant_response_variable = True
 stop_instant_response_variable = True
 instant_response_time = ""
 auto_hi_toggle = True
+auto_hi_api_endpoint = True
 
 keyboard = Controller()
 
@@ -53,6 +54,8 @@ def instant_response():
     global instant_response_variable
     global instant_response_time
     global stop_instant_response_variable
+    global auto_hi_set
+    global auto_hi_thread
 
     stop_instant_response_variable = True
 
@@ -67,7 +70,7 @@ def instant_response():
         print(e)
         return
 
-    print("Waiting for GN to finish")
+    """print("Waiting for GN to finish")
 
     while stop_instant_response_variable:
         current_time = datetime.now().strftime("%H:%M:%S")
@@ -112,7 +115,7 @@ def instant_response():
 
                 # Clicks off WeChat
             except Exception:
-                pass
+                pass"""
 
     response = requests.get('http://localhost:8080/get_gm_time')
     stop_timer = response.json().get('variable_name')
@@ -155,7 +158,18 @@ def instant_response():
 
         time.sleep(1)
 
-    print("done")
+    print("Instance response done")
+
+    response = requests.get('http://localhost:8080/get_auto_hi')
+    auto_hi_set = response.json().get('variable_name')
+
+    requests.get('http://localhost:8080/toggle_auto_hi')
+
+    if auto_hi_set:
+        print("Auto-Hi started")
+        auto_hi_thread = threading.Thread(target=auto_hi)
+        auto_hi_thread.start()
+
     stop_instant_response_variable = True
     thread = None
 
@@ -163,6 +177,7 @@ def instant_response():
 
 def auto_hi():
     global auto_hi_toggle
+    global auto_hi_set
     try:
         pyautogui.click(510, 1060)
         time.sleep(1)
@@ -180,8 +195,8 @@ def auto_hi():
         current_time = datetime.now().strftime("%H:%M:%S")
 
         if current_time == "10:00:00":  # doesnt auto respond if it is 10 AM
-            stop_instant_response_variable = False
             print("Auto-Hi not triggered.")
+            auto_hi_set = False
             break
 
         screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
@@ -194,7 +209,9 @@ def auto_hi():
             pass
 
         else:
+            print('Auto-Hi Triggered')
             WeChatTask("Hi!")
+            auto_hi_set = False
             break
 
         time.sleep(1)
@@ -245,6 +262,7 @@ def run_script():
             logger("Returning 200", "Success")
             if auto_hi_set:
                 auto_hi_thread = threading.Thread(target=auto_hi)
+                auto_hi_thread.start()
             return "script stopped", 200
         except Exception as e:
             print(e)
@@ -252,6 +270,7 @@ def run_script():
 
     if auto_hi_set:
         auto_hi_thread = threading.Thread(target=auto_hi)
+        auto_hi_thread.start()
 
     return f"{instant_response_time}", 205
 
@@ -297,11 +316,13 @@ def set_gm_message():
 @app.route('/auto_hi_start_stop')
 def auto_hi_start_stop():
     global auto_hi_toggle
+    global auto_hi_thread
     if auto_hi_toggle:
         auto_hi_toggle = False
     else:
         auto_hi_toggle = True
         auto_hi_thread = threading.Thread(target=auto_hi)
+        auto_hi_thread.start()
     return "done", 200
 
 
