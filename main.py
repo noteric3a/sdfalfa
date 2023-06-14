@@ -12,6 +12,7 @@ from discord.ext import commands
 from flask import jsonify, Flask
 from flask_caching import Cache
 from github import Github
+import json
 
 # 4/26/2023
 
@@ -26,6 +27,7 @@ warning_send_message_time = ""
 gn_message = ""
 gm_message = ""
 sending_message = ""
+webserver_ip = ""
 gm_hour = None
 gm_minute = None
 gm_second = None
@@ -51,7 +53,6 @@ logging.basicConfig(filename='main.log', level=logging.DEBUG,
 
 def logger(event_name, event_details):
     logging.info(f"{event_name}: {event_details}")
-
 
 def update_github_day_file(type):
     access_token = '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'
@@ -461,7 +462,7 @@ async def on_message(message):
     if message.content.lower() == "stop gm":
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://localhost:5000/stop_gm') as resp:
+            async with session.get(f'http://{webserver_ip}:5000/stop_gm') as resp:
                 if resp.status == 200:
                     gm_running = False
                     logger("stop_gm", "success")
@@ -482,7 +483,7 @@ async def on_message(message):
     if message.content.lower() == "reroll gm message":  # do not make into elif statements because it won't go to the next one if false
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://localhost:5000/reroll_gm_message') as resp:
+            async with session.get(f'http://{webserver_ip}:5000/reroll_gm_message') as resp:
                 if resp.status == 200:
 
                     gm_message = GoodMorningMessage()
@@ -516,7 +517,7 @@ async def on_message(message):
     if message.content.lower() == "reroll gm time":
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://localhost:5000/reroll_gm_time') as resp:
+            async with session.get(f'http://{webserver_ip}:5000/reroll_gm_time') as resp:
                 if resp.status == 200:
                     new_target_time = await target_time_getter(hour=None, minute=None, second=None, bot_type=1)
                     gm_target_time = new_target_time
@@ -547,7 +548,7 @@ async def on_message(message):
     if message.content.lower().split("&")[0] == "set gm message":
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://localhost:5000/set_gm_message') as resp:
+            async with session.get(f'http://{webserver_ip}:5000/set_gm_message') as resp:
                 if resp.status == 200:
                     gm_message = message.content.lower().split("&")[1]
                     logger("setting gm message", "success")
@@ -577,7 +578,7 @@ async def on_message(message):
     if message.content.lower() == "stop gn":
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://localhost:5001/stop_gn') as resp:
+            async with session.get(f'http://{webserver_ip}:5001/stop_gn') as resp:
                 if resp.status == 200:
                     gn_running = False
                     logger("stopping gn", "success")
@@ -592,7 +593,7 @@ async def on_message(message):
     if message.content.lower() == "reroll gn message":  # do not make into elif statements because it won't go to the next one if false
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://localhost:5001/reroll_gn_message') as resp:
+            async with session.get(f'http://{webserver_ip}:5001/reroll_gn_message') as resp:
                 if resp.status == 200:
                     gn_message = GoodNightMessage()
                     logger("rerolling gn_message", "success")
@@ -611,7 +612,7 @@ async def on_message(message):
     if message.content.lower() == "reroll gn time":
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://localhost:5001/reroll_gn_time') as resp:
+            async with session.get(f'http://{webserver_ip}:5001/reroll_gn_time') as resp:
                 if resp.status == 200:
                     new_target_time = await target_time_getter(hour=None, minute=None, second=None, bot_type=2)
                     gn_target_time = new_target_time
@@ -631,7 +632,7 @@ async def on_message(message):
     if message.content.lower().split("&")[0] == "set gn message":
         await message.delete()
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://localhost:5001/set_gn_message') as resp:
+            async with session.get(f'http://{webserver_ip}:5001/set_gn_message') as resp:
                 if resp.status == 200:
                     logger("setting gn_message", "success")
                     gn_message = message.content.lower().split("&")[1]
@@ -713,7 +714,7 @@ async def on_message(message):
         await message.delete()
         cant_start_twice = False
         async with aiohttp.ClientSession() as session:
-            async with session.get("http://localhost:5000/stop_instant_response") as resp:
+            async with session.get(f'http://{webserver_ip}:5000/stop_instant_response') as resp:
                 if resp.status == 200:
                     embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
                                                 binary=2,
@@ -729,7 +730,7 @@ async def on_message(message):
         await message.delete()
         if not cant_start_twice:
             async with aiohttp.ClientSession() as session:
-                async with session.get("http://localhost:5000/instant_response") as resp:
+                async with session.get(f'http://{webserver_ip}:5000/instant_response') as resp:
                     if resp.status == 200:
                         cant_start_twice = True
                         embede = await create_embed(bot_type="GM bot", targetTime=gm_target_time, message=gm_message,
@@ -795,7 +796,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
 
     if instant_response is None or instant_response:
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://localhost:5000/instant_response') as resp:
+            async with session.get(f'http://{webserver_ip}:5000/instant_response') as resp:
                 if resp.status == 200:
                     print("instant response started")
                 else:
@@ -830,7 +831,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
             try:
                 async with aiohttp.ClientSession() as session:
                     logger("gm_bot", "Request sent!")
-                    async with session.get('http://localhost:5000/gm') as resp:
+                    async with session.get(f'http://{webserver_ip}:5000/gm') as resp:
                         if resp.status == 200:
                             logger("gm_bot", "Request Code 200!")
                             # Update the embed with a success message
@@ -846,7 +847,7 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                             update_github_day_file(2)
                             return 200
                         elif resp.status == 205:
-                            response = requests.get('http://localhost:5000/instant_response_time')
+                            response = requests.get(f'http://{webserver_ip}:5000/instant_response_time')
                             instant_response_gm_target_time = response.json().get('variable_name')
                             await channel.send(f"Instant response was triggered at {instant_response_gm_target_time}")
                             logger("gm_bot", "Request Code 205!")
@@ -937,7 +938,7 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
         if current_time == gn_target_time:
             logger("gn_bot", "started session")
             async with aiohttp.ClientSession() as session2:
-                async with session2.get('http://localhost:5001/gn') as resp:
+                async with session2.get(f'http://{webserver_ip}:5001/gn') as resp:
                     if resp.status == 200:
                         logger("gn_bot", "200 recieved from webserver")
                         current_days = day(bot_type=2)
@@ -976,7 +977,7 @@ async def screenshot(interaction: discord.Interaction):
     try:
         async with aiohttp.ClientSession() as session:
             logger("Screenshot", "started session, awaiting screenshot")
-            async with session.get('http://localhost:42069/screenshot') as resp:
+            async with session.get(f'http://{webserver_ip}:42069/screenshot') as resp:
                 if resp.status == 200:
                     logger("Screenshot", "200")
                     file_data = io.BytesIO(await resp.read())
@@ -1188,7 +1189,7 @@ async def send_message3(message):
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get('http://localhost:42069/send') as resp:
+            async with session.get(f'http://{webserver_ip}:42069/send') as resp:
                 if resp.status == 200:
                     return 200
                 else:
@@ -1243,7 +1244,7 @@ loop = asyncio.get_event_loop()
 
 
 def run_flask():
-    app.run(host='localhost', port=8080)
+    app.run(host='0.0.0.0', port=8080)
 
 
 async def run_discord():

@@ -4,6 +4,7 @@ import pyautogui
 from pynput.keyboard import Key, Controller
 import requests
 import asyncio
+import json
 
 keyboard = Controller()
 
@@ -11,6 +12,19 @@ pyautogui.FAILSAFE = False
 
 logging.basicConfig(filename='gn.log', level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+
+
+def main_ip_get():
+    with open('ip.json') as file:
+        data = json.load(file)
+
+    if data['main_ip'] is None:
+        raise ValueError("There is no Main IP, the script will not run")
+    else:
+        return data['main_ip']
+
+
+main_ip = main_ip_get()
 
 def logger(event_name, event_details):
     logging.info(f"{event_name}: {event_details}")
@@ -51,9 +65,9 @@ def run_script():
     global gn_target_time
     global gn_message
     global stop_num
-    response = requests.get('http://localhost:8080/get_gn_time')
+    response = requests.get(f'http://{main_ip}:8080/get_gn_time')
     gn_target_time = response.json().get('variable_name')
-    response = requests.get('http://localhost:8080/get_gn_message')
+    response = requests.get(f'http://{main_ip}:8080/get_gn_message')
     gn_message = response.json().get('variable_name')
     print("Gn message: " + gn_message)
     try:
@@ -93,4 +107,4 @@ def set_gn_message():
 
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=5001)
+    app.run(host='0.0.0.0', port=5001)

@@ -8,17 +8,52 @@ from PIL import Image, ImageChops
 import time
 from datetime import datetime, timedelta
 import threading
+import socket
+import json
 
 instant_response_variable = True
 stop_instant_response_variable = True
 instant_response_time = ""
 auto_hi_toggle = True
 auto_hi_api_endpoint = True
+main_ip = ""
 
 keyboard = Controller()
 
 logging.basicConfig(filename='gm.log', level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(name)s %(threadName)s : %(message)s')
+
+
+def ip_GET():
+    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    try:
+        sock.connect(("8.8.8.8", 80))
+        # connects to google DNS
+        ip_address = sock.getsockname()[0]
+
+        with open('ip.json') as file:
+            data = json.load(file)
+
+        data['webserver_ip'] = ip_address
+
+        with open('ip.json', 'w') as file:
+            json.dump(data, file, indent=4)
+
+
+    except socket.error:
+        print("UH OH")
+
+
+def main_ip_get():
+    with open('ip.json') as file:
+        data = json.load(file)
+
+    if data['main_ip'] is None:
+        raise ValueError("There is no Main IP, the script will not run")
+    else:
+        return data['main_ip']
+
 def WeChatTask(message):
     print(pyautogui.size())
     pyautogui.click(510, 1060)
@@ -45,6 +80,7 @@ def WeChatTask(message):
 
     # clicks off
 
+
 def logger(event_name, event_details):
     logging.info(f"{event_name}: {event_details}")
 
@@ -62,7 +98,7 @@ def instant_response():
     try:
         pyautogui.click(510, 1060)
         time.sleep(1)
-        pyautogui.click(100,100)
+        pyautogui.click(100, 100)
         screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
         screenshot.save('old.png')
         reference = Image.open('old.png')
@@ -70,7 +106,7 @@ def instant_response():
         print(e)
         return
 
-    """print("Waiting for GN to finish")
+    print("Waiting for GN to finish")
 
     while stop_instant_response_variable:
         current_time = datetime.now().strftime("%H:%M:%S")
@@ -92,7 +128,7 @@ def instant_response():
             screenshot.save('new.png')
             new_reference = Image.open('new.png')
         except Exception:
-            pyautogui.moveTo(200,200, duration = 1)
+            pyautogui.moveTo(200, 200, duration=1)
             screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
             screenshot.save('new.png')
             new_reference = Image.open('new.png')
@@ -111,11 +147,11 @@ def instant_response():
 
                 time.sleep(2)
 
-                pyautogui.click(100,100)
+                pyautogui.click(100, 100)
 
                 # Clicks off WeChat
             except Exception:
-                pass"""
+                pass
 
     response = requests.get('http://localhost:8080/get_gm_time')
     stop_timer = response.json().get('variable_name')
@@ -173,6 +209,7 @@ def instant_response():
     stop_instant_response_variable = True
     thread = None
 
+
 #  instant response, if responded
 
 def auto_hi():
@@ -181,7 +218,7 @@ def auto_hi():
     try:
         pyautogui.click(510, 1060)
         time.sleep(1)
-        pyautogui.click(100,100)
+        pyautogui.click(100, 100)
         screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
         screenshot.save('old.png')
         reference = Image.open('old.png')
@@ -216,6 +253,7 @@ def auto_hi():
 
         time.sleep(1)
 
+
 #  auto hi, comes after instant response or after /gm
 
 app = Flask(__name__)
@@ -239,14 +277,14 @@ def run_script():
     gm_stopper = True
     run_handle_requests = True
 
-    response = requests.get('http://localhost:8080/get_auto_hi')
+    response = requests.get(f'http://{main_ip}:8080/get_auto_hi')
     auto_hi_set = response.json().get('variable_name')
 
     if instant_response_variable:
-        response = requests.get('http://localhost:8080/get_gm_time')
+        response = requests.get(f'http://{main_ip}:8080/get_gm_time')
         gm_target_time = response.json().get('variable_name')
 
-        response = requests.get('http://localhost:8080/get_gm_message')
+        response = requests.get(f'http://{main_ip}:8080/get_gm_message')
         gm_message = response.json().get('variable_name')
 
         print("GM message: " + gm_message)
@@ -281,7 +319,8 @@ def stop_gm():
     gm_stopper = False
     return "", 200
 
-@app.route('/instant_response', methods = ['GET'])
+
+@app.route('/instant_response', methods=['GET'])
 def instant_response_started():
     global thread
     thread = threading.Thread(target=instant_response)
@@ -289,11 +328,12 @@ def instant_response_started():
     return "starting", 200
 
 
-@app.route('/instant_response_time', methods = ['GET'])
+@app.route('/instant_response_time', methods=['GET'])
 def instant_response_time_get():
     return jsonify(variable_name=instant_response_time)
 
-@app.route('/stop_instant_response', methods = ['GET'])
+
+@app.route('/stop_instant_response', methods=['GET'])
 def stop_instant_response():
     global stop_instant_response_variable
     global thread
@@ -301,17 +341,21 @@ def stop_instant_response():
     thread = None
     return "stopped", 200
 
+
 @app.route('/reroll_gm_message', methods=['GET'])
 def reroll_gm_message():
     return "switched", 200
+
 
 @app.route('/reroll_gm_time', methods=['GET'])
 def reroll_gm_time():
     return "switched", 200
 
+
 @app.route('/set_gm_message', methods=['GET'])
 def set_gm_message():
     return "set", 200
+
 
 @app.route('/auto_hi_start_stop')
 def auto_hi_start_stop():
@@ -325,6 +369,8 @@ def auto_hi_start_stop():
         auto_hi_thread.start()
     return "done", 200
 
+ip_GET()
+main_ip = main_ip_get()
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=5000)
+    app.run(host='0.0.0.0', port=5000)
