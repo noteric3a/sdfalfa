@@ -41,6 +41,7 @@ gn_embed = None
 send_message_embed = None
 gm_channel = None
 gn_channel = None
+gm_auto_hi = False
 TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GX1t9O.A7PgLBttKkpaA8MQs0bV3lnavmT7SqAiwOjQyU"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
@@ -759,7 +760,7 @@ def get_seconds_until_next_time():
 
 
 @bot.tree.command(name="gm", description="gm bot")
-async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None, instant_response: bool = None):
+async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None, instant_response: bool = None, auto_hi: bool = None):
     global gm_running
 
     if gm_running:  # so the code doesnt run twice
@@ -777,7 +778,7 @@ async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int
         cache_clearer()
         logger("starting gm bot...", "Running!")
         if clear_time == 0:
-            recursive = await gm(interaction, hour, minute, second, instant_response)
+            recursive = await gm(interaction, hour, minute, second, instant_response, auto_hi)
             clear_time += 1
         else:
             recursive = await gm(interaction, hour=None, minute=None, second=None, instant_response=instant_response)
@@ -785,11 +786,12 @@ async def gm_bot(interaction: discord.Interaction, hour: int = None, minute: int
 
 
 async def gm(interaction: discord.Interaction, hour: int = None, minute: int = None,
-             second: int = None, instant_response: bool = None):
+             second: int = None, instant_response: bool = None, auto_hi: bool = None):
     global gm_embed
     global gm_running
     global gm_target_time
     global gm_message
+    global gm_auto_hi
 
     if instant_response is None or instant_response:
         async with aiohttp.ClientSession() as session:
@@ -798,6 +800,11 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                     print("instant response started")
                 else:
                     print("uh oh")
+
+    if not auto_hi or auto_hi is None:
+        pass
+    else:
+        gm_auto_hi = True
 
     channel = interaction.channel
     gm_target_time = await target_time_getter(hour, minute, second, 1)
@@ -835,6 +842,8 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                             await gm_embed.edit(embed=embede)
                             logger("gm_bot", "Embed is now green")
                             await asyncio.sleep(get_seconds_until_next_time())
+                            update_github_day_file(1)
+                            update_github_day_file(2)
                             return 200
                         elif resp.status == 205:
                             response = requests.get('http://localhost:5000/instant_response_time')
@@ -852,6 +861,8 @@ async def gm(interaction: discord.Interaction, hour: int = None, minute: int = N
                             await gm_embed.edit(embed=embede)
                             logger("gm_bot", "Embed is now green")
                             await asyncio.sleep(get_seconds_until_next_time())
+                            update_github_day_file(1)
+                            update_github_day_file(2)
                             return 200
                         else:
                             logger("gm_bot", f"uh-oh spagettio")
@@ -903,7 +914,7 @@ async def gn_bot(interaction: discord.Interaction, hour: int = None, minute: int
         recursive = await gn_bot_recursive(interaction, hour, minute, second)
         logger("gn_bot", "bot finished")
 
-
+#  recursive portion
 async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, minute: int = None, second: int = None):
     global gn_running
     global gn_message
@@ -938,6 +949,8 @@ async def gn_bot_recursive(interaction: discord.Interaction, hour: int = None, m
                         logger("gn_bot", "embed is now green")
                         await asyncio.sleep(get_seconds_until_next_time())
                         logger("gn_bot", "returning 200")
+                        update_github_day_file(1)
+                        update_github_day_file(2)
                         return 200  # Recursive call
                     else:
                         embede = await create_embed(bot_type="GN bot", targetTime=gn_target_time, message=gn_message,
@@ -1214,6 +1227,11 @@ def get_gn_message():
 @app.route('/get_send_message', methods=['GET'])
 def get_send_message():
     return jsonify(variable_name=sending_message)
+
+@app.route('/get_auto_hi', methods=['GET'])
+def get_auto_hi():
+    global gm_auto_hi
+    return jsonify(variable_name=gm_auto_hi)
 
 
 loop = asyncio.get_event_loop()
