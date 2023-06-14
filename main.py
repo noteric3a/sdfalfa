@@ -27,7 +27,6 @@ warning_send_message_time = ""
 gn_message = ""
 gm_message = ""
 sending_message = ""
-webserver_ip = ""
 gm_hour = None
 gm_minute = None
 gm_second = None
@@ -92,6 +91,17 @@ def update_github_day_file(type):
 def cache_clearer():
     cache.clear()
 
+def ip_get():
+    with open('ip.json') as file:
+        data = json.load(file)
+
+    if data['webserver_ip'] is None:
+        raise ValueError("There is no webserver IP, the script will not run")
+    else:
+        print("Webserver IP: " + data['webserver_ip'])
+        return data['webserver_ip']
+
+webserver_ip = ip_get()
 
 # clears the cache
 
