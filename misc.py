@@ -5,16 +5,27 @@ import requests
 from flask import Flask, send_file
 import pyautogui
 from pynput.keyboard import Controller, Key
+import json
 
 pyautogui.FAILSAFE = False
-
-# 4/26/2023
 
 app = Flask(__name__)
 
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 keyboard = Controller()
+
+def main_ip_get():
+    with open('ip.json') as file:
+        data = json.load(file)
+
+    if data['main_ip'] is None:
+        raise ValueError("There is no Main IP, the script will not run")
+    else:
+        return data['main_ip']
+
+
+main_ip = main_ip_get()
 
 @app.route('/screenshot', methods=['GET'])
 def screenshot():
@@ -46,7 +57,7 @@ def send_message():
     global set_message
     global handler
 
-    response = requests.get('http://localhost:8080/get_send_message')
+    response = requests.get(f'http://{main_ip}:8080/get_send_message')
     set_message = response.json().get('variable_name')
 
     try:
@@ -82,4 +93,4 @@ def send_message():
 
 
 if __name__ == '__main__':
-    app.run(host='localhost', port=42069)
+    app.run(host='0.0.0.0', port=42069)
