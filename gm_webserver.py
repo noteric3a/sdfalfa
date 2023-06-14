@@ -12,6 +12,8 @@ import threading
 instant_response_variable = True
 stop_instant_response_variable = True
 instant_response_time = ""
+auto_hi_toggle = True
+auto_hi_api_endpoint = True
 
 keyboard = Controller()
 
@@ -52,6 +54,8 @@ def instant_response():
     global instant_response_variable
     global instant_response_time
     global stop_instant_response_variable
+    global auto_hi_set
+    global auto_hi_thread
 
     stop_instant_response_variable = True
 
@@ -62,13 +66,11 @@ def instant_response():
         screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
         screenshot.save('old.png')
         reference = Image.open('old.png')
-    except Exception:
-        pyautogui.moveTo(200, 200, duration=1)
-        screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
-        screenshot.save('old.png')
-        reference = Image.open('old.png')
+    except Exception as e:
+        print(e)
+        return
 
-    print("Waiting for GN to finish")
+    """print("Waiting for GN to finish")
 
     while stop_instant_response_variable:
         current_time = datetime.now().strftime("%H:%M:%S")
@@ -113,7 +115,7 @@ def instant_response():
 
                 # Clicks off WeChat
             except Exception:
-                pass
+                pass"""
 
     response = requests.get('http://localhost:8080/get_gm_time')
     stop_timer = response.json().get('variable_name')
@@ -156,9 +158,65 @@ def instant_response():
 
         time.sleep(1)
 
-    print("done")
+    print("Instance response done")
+
+    response = requests.get('http://localhost:8080/get_auto_hi')
+    auto_hi_set = response.json().get('variable_name')
+
+    requests.get('http://localhost:8080/toggle_auto_hi')
+
+    if auto_hi_set:
+        print("Auto-Hi started")
+        auto_hi_thread = threading.Thread(target=auto_hi)
+        auto_hi_thread.start()
+
     stop_instant_response_variable = True
     thread = None
+
+#  instant response, if responded
+
+def auto_hi():
+    global auto_hi_toggle
+    global auto_hi_set
+    try:
+        pyautogui.click(510, 1060)
+        time.sleep(1)
+        pyautogui.click(100,100)
+        screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
+        screenshot.save('old.png')
+        reference = Image.open('old.png')
+    except Exception as e:
+        print(e)
+        return
+
+    print("Running until 10 AM")
+
+    while auto_hi_toggle:
+        current_time = datetime.now().strftime("%H:%M:%S")
+
+        if current_time == "10:00:00":  # doesnt auto respond if it is 10 AM
+            print("Auto-Hi not triggered.")
+            auto_hi_set = False
+            break
+
+        screenshot = pyautogui.screenshot(region=(497, 1040, 40, 40))
+        screenshot.save('new.png')
+        new_reference = Image.open('new.png')
+
+        diff = ImageChops.difference(reference, new_reference)
+
+        if diff.getbbox() is None:
+            pass
+
+        else:
+            print('Auto-Hi Triggered')
+            WeChatTask("Hi!")
+            auto_hi_set = False
+            break
+
+        time.sleep(1)
+
+#  auto hi, comes after instant response or after /gm
 
 app = Flask(__name__)
 
@@ -175,10 +233,14 @@ def run_script():
     global run_handle_requests
     global instant_response_variable
     global instant_response_time
+    global auto_hi_thread
 
     # Reset stopper and handle_requests flag to True
     gm_stopper = True
     run_handle_requests = True
+
+    response = requests.get('http://localhost:8080/get_auto_hi')
+    auto_hi_set = response.json().get('variable_name')
 
     if instant_response_variable:
         response = requests.get('http://localhost:8080/get_gm_time')
@@ -198,10 +260,17 @@ def run_script():
             gm_stopper = False
             run_handle_requests = False
             logger("Returning 200", "Success")
+            if auto_hi_set:
+                auto_hi_thread = threading.Thread(target=auto_hi)
+                auto_hi_thread.start()
             return "script stopped", 200
         except Exception as e:
             print(e)
             return "Script stopped.", 201
+
+    if auto_hi_set:
+        auto_hi_thread = threading.Thread(target=auto_hi)
+        auto_hi_thread.start()
 
     return f"{instant_response_time}", 205
 
@@ -232,20 +301,29 @@ def stop_instant_response():
     thread = None
     return "stopped", 200
 
-
 @app.route('/reroll_gm_message', methods=['GET'])
 def reroll_gm_message():
     return "switched", 200
-
 
 @app.route('/reroll_gm_time', methods=['GET'])
 def reroll_gm_time():
     return "switched", 200
 
-
 @app.route('/set_gm_message', methods=['GET'])
 def set_gm_message():
     return "set", 200
+
+@app.route('/auto_hi_start_stop')
+def auto_hi_start_stop():
+    global auto_hi_toggle
+    global auto_hi_thread
+    if auto_hi_toggle:
+        auto_hi_toggle = False
+    else:
+        auto_hi_toggle = True
+        auto_hi_thread = threading.Thread(target=auto_hi)
+        auto_hi_thread.start()
+    return "done", 200
 
 
 if __name__ == '__main__':
