@@ -43,7 +43,7 @@ send_message_embed = None
 gm_channel = None
 gn_channel = None
 gm_auto_hi = False
-TOKEN = "MTA4OTAyMTQ4NDk1MDkwMDc5OQ.GX1t9O.A7PgLBttKkpaA8MQs0bV3lnavmT7SqAiwOjQyU"
+TOKEN = "MTA5ODc3MTgwMDc2ODM4OTE2MA.GBizV-.2wVol9ysvXD9WI9USh-p4_cGelHOqhckx6mMOo"
 url = "https://discord.com/api/webhooks/1089023578277687386/4Uftkx4wUZyxieQTBIADV0eS5y4JmcFdfzCGZ_qhtVLPACXJNu0FdiMG6WgoPB1qI3sI"
 
 logging.basicConfig(filename='main.log', level=logging.DEBUG,
@@ -987,7 +987,7 @@ async def screenshot(interaction: discord.Interaction):
     try:
         async with aiohttp.ClientSession() as session:
             logger("Screenshot", "started session, awaiting screenshot")
-            async with session.get(f'http://{webserver_ip}:42069/screenshot') as resp:
+            async with session.get(f'http://{webserver_ip}:5420/screenshot') as resp:
                 if resp.status == 200:
                     logger("Screenshot", "200")
                     file_data = io.BytesIO(await resp.read())
@@ -1199,7 +1199,7 @@ async def send_message3(message):
 
     try:
         async with aiohttp.ClientSession() as session:
-            async with session.get(f'http://{webserver_ip}:42069/send') as resp:
+            async with session.get(f'http://{webserver_ip}:5420/send') as resp:
                 if resp.status == 200:
                     return 200
                 else:
