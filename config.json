@@ -1,0 +1,59 @@
+{
+  "minecraft": {
+    "emails": "fastbridged-jh2wh45-234j5@outlook.com "
+  },
+  "page": {
+    "port": 6969,
+    "enabled": true
+  },
+  "webhook": {
+    "webhook_url": "https://discord.com/api/webhooks/1115655862262956164/rBXV5Es7VVJKSb7RGXEJefds8AW0lAXE-xD65bltxp4CY03vQPzNWava_ttvipCnGBfW"
+  },
+  "bed_flips": {
+    "spam_buy_delay": 30,
+    "pre_bed_spam": 2000
+  },
+  "actions": {
+    "duration": "24h",
+    "claim_all": true,
+    "save_queue": true,
+    "round_prices": true,
+    "round_to": 100
+  },
+  "flips": {
+    "min_profit": 8000000,
+    "min_profit_percentage": 12.5,
+    "sell_overflow_multiplier": 1.25,
+    "sell_overflow_base": 10000000,
+    "min_volume": 1,
+    "sort_flips": "descending",
+    "disable_auto_relist": [
+      "HYPERION",
+      "DARK_CLAYMORE",
+      "TERMINATOR",
+      "PET_GOLDEN_DRAGON_LEGENDARY",
+      "PET_ENDER_DRAGON_EPIC",
+      "PET_ENDER_DRAGON_LEGENDARY"
+    ],
+    "disable_auto_relist_attributes": [
+      "ultimate_chimera:1",
+      "ultimate_chimera:2",
+      "ultimate_chimera:3",
+      "ultimate_chimera:4",
+      "ultimate_chimera:5"
+    ]
+  },
+  "api": {
+    "binmaster_key": "1039045642259017778.cheater.rcV84yMPJb5HT/eDDgxJPm+WDJ61ydehTX5MmDfGN_SMfa/NZTGQEDNZ.BqXYZn8Ol7wGdQ78xnM~1N",
+    "hypixel_api_key": "738a0584-4036-4135-9b38-541bb63d0231",
+    "auto_set_hypixel_api_key": true,
+    "manually_set_coop_count": 4
+  },
+  "logger": {
+    "colorfulLog": true,
+    "logDate": true,
+    "logChat": true,
+    "logConsole": true,
+    "prefix": "%USERNAME% >"
+  }
+}
